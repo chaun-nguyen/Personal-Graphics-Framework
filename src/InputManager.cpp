@@ -70,6 +70,7 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
     if (action == GLFW_REPEAT) return;
 
     auto* cm = Engine::managers_.GetManager<CameraManager*>();
+    auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
 
     if (action == GLFW_PRESS)
     {
@@ -79,11 +80,19 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
         cm->nav = !cm->nav;
         cm->key = GLFW_KEY_TAB;
         break;
+        // camera movement
       case GLFW_KEY_W:
       case GLFW_KEY_S:
       case GLFW_KEY_A:
       case GLFW_KEY_D:
         cm->key = key;
+        break;
+        // end effector movement for ik
+      case GLFW_KEY_UP:
+      case GLFW_KEY_DOWN:
+      case GLFW_KEY_RIGHT:
+      case GLFW_KEY_LEFT:
+        ikm->key = key;
         break;
       case GLFW_KEY_ESCAPE:
         exit(EXIT_SUCCESS);
@@ -92,6 +101,7 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
     else if (action == GLFW_RELEASE)
     {
       cm->key = GLFW_KEY_UNKNOWN;
+      ikm->key = GLFW_KEY_UNKNOWN;
     }
   }
   else

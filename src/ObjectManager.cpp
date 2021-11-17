@@ -40,18 +40,6 @@ ObjectManager::~ObjectManager()
 
 void ObjectManager::Setup()
 {
-  //Shape* boxPolygon = new Box();
-  //Object* box = new Object(boxPolygon, 
-  //  boxPolygon->diffuseColor, boxPolygon->specularColor, boxPolygon->shininess);
-  //
-  //box->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
-  //box->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
-  //box->SetPosition({ 5.0f,5.0f,5.0f });
-  //box->SetRotation(0.f);
-  //box->SetScale({ 1.f,1.f,4.f });
-  //box->BuildModelMatrix();
-  //
-  //Add(box);
   //
   //Shape* boxPolygon2 = new Box();
   //Object* box2 = new Object(boxPolygon2,
@@ -78,7 +66,7 @@ void ObjectManager::Setup()
   sphere->BuildModelMatrix();
   
   Add(sphere);
-  
+
   // create bounding volume
   BoundingVolume* bv = sphere->shape->bbox(); // bbox() actually create new bounding volume, dont call it every frame
   bv->bv_object->SetPosition(bv->center_ * bv->parent->GetScale() + bv->parent->GetPosition());
@@ -88,6 +76,23 @@ void ObjectManager::Setup()
   sphere->bv = bv;
   AddBoundingVolumeGJK(bv);
 
+  // end effector for inverse kinematic
+  Shape* boxPolygon = new Box();
+  Object* box = new Object(boxPolygon,
+    boxPolygon->diffuseColor, boxPolygon->specularColor, boxPolygon->shininess);
+
+  box->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  box->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  box->tiling = 1.f;
+  box->SetPosition({ 0.0f,100.0f,0.0f });
+  box->SetRotation(0.f);
+  box->SetScale({ 100.f,100.f,100.f });
+  box->BuildModelMatrix();
+
+  Add(box);
+  Engine::managers_.GetManager<InverseKinematicManager*>()->EndEffector = box;
+
+  // plane
   Shape* planePolygon = new Plane(6000.0f, 10);
   Object* plane = new Object(planePolygon,
     floorColor, planePolygon->specularColor, planePolygon->shininess);
@@ -279,20 +284,28 @@ void ObjectManager::Draw(ShaderProgram* shaderProgram)
       glm::mat4 normalTr = glm::transpose(glm::inverse(obj->modelTr));
       glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(normalTr));
 
-      //loc = glGetUniformLocation(shaderProgram->programID, "diffuseColor");
-      //glUniform3fv(loc, 1, glm::value_ptr(obj->diffuseColor));
-
       loc = glGetUniformLocation(shaderProgram->programID, "isModel");
       glUniform1i(loc, 0);
 
       loc = glGetUniformLocation(shaderProgram->programID, "isTextureSupported");
-      glUniform1i(loc, 1);
+      glUniform1i(loc, obj->isTextureSupported);
 
-      obj->diffuseTex->Bind(9, shaderProgram->programID, "texture_diffuse1");
-      obj->diffuseTex->Unbind();
+      loc = glGetUniformLocation(shaderProgram->programID, "tiling");
+      glUniform1f(loc, obj->tiling);
 
-      obj->normalTex->Bind(10, shaderProgram->programID, "texture_normal1");
-      obj->normalTex->Unbind();
+      if (obj->isTextureSupported)
+      {
+        obj->diffuseTex->Bind(9, shaderProgram->programID, "texture_diffuse1");
+        obj->diffuseTex->Unbind();
+
+        obj->normalTex->Bind(10, shaderProgram->programID, "texture_normal1");
+        obj->normalTex->Unbind();
+      }
+      else
+      {
+        loc = glGetUniformLocation(shaderProgram->programID, "diffuseColor");
+        glUniform3fv(loc, 1, glm::value_ptr(obj->diffuseColor));
+      }
 
       obj->Draw();
     }

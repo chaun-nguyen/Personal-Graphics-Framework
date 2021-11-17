@@ -44,6 +44,9 @@ public:
 
   Model* model = nullptr;
   BoundingVolume* bv = nullptr;
+
+  int isTextureSupported = 1;
+  float tiling = 10.f;
 private:
   glm::vec3 position;
   glm::vec3 scale;

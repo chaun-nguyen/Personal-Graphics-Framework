@@ -21,6 +21,8 @@ uniform sampler2D texture_specular1;
 uniform int isTextureSupported;
 uniform int isModel;
 
+uniform float tiling;
+
 float near = 1;
 float far = 20000.0;
 
@@ -44,7 +46,7 @@ void main()
   }
   else
   {
-    uv = texVec * 10.0;
+    uv = texVec * tiling;
     gSpecular = vec4(vec3(0.3),1.0);
     B = normalize(cross(T,normalVec));
   }
