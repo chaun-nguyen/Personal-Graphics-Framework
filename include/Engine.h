@@ -20,6 +20,7 @@ public:
   ObjectManager,
   AnimationManager,
   SplineManager,
+  InverseKinematicManager,
   RenderManager,
   ImGuiUIManager> managers_;
 };

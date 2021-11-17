@@ -213,6 +213,9 @@
     <ClCompile Include="src\Spline.cpp">
       <Filter>Source Files\Graphics\SpaceCurve</Filter>
     </ClCompile>
+    <ClCompile Include="src\InverseKinematicManager.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imgui.h">
@@ -361,6 +364,9 @@
     </ClInclude>
     <ClInclude Include="include\Spline.h">
       <Filter>Header Files\Graphics\SpaceCurve</Filter>
+    </ClInclude>
+    <ClInclude Include="include\InverseKinematicManager.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

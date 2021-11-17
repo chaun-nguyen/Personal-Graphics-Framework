@@ -12,6 +12,7 @@
 #include "ObjectManager.h"
 #include "AnimationManager.h"
 #include "SplineManager.h"
+#include "InverseKinematicManager.h"
 
 #include "RenderManager.h"
 #include "ImGuiUIManager.h"
@@ -27,6 +28,7 @@ enum class ManagerOrder
   ObjectManager,
   AnimationManager,
   SplineManager,
+  InverseKinematicManager,
   RenderManager,
   ImGuiUIManager,
 

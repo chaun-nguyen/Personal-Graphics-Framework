@@ -10,6 +10,7 @@ DeserializeManager,
 ObjectManager,
 AnimationManager,
 SplineManager,
+InverseKinematicManager,
 RenderManager,
 ImGuiUIManager>Engine::managers_;
 
@@ -30,6 +31,8 @@ Engine::Engine()
   managers_.GetManager<AnimationManager*>()->Setup();
 
   managers_.GetManager<SplineManager*>()->Setup();
+
+  managers_.GetManager<InverseKinematicManager*>()->Setup();
 
   managers_.GetManager<RenderManager*>()->Setup();
 
@@ -61,6 +64,8 @@ void Engine::Step()
   managers_.GetManager<AnimationManager*>()->Update();
 
   managers_.GetManager<SplineManager*>()->Update();
+
+  managers_.GetManager<InverseKinematicManager*>()->Update();
 
   managers_.GetManager<RenderManager*>()->Update();
 

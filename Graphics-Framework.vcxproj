@@ -45,6 +45,7 @@
     <ClCompile Include="src\ImGuiUIManager.cpp" />
     <ClCompile Include="src\ImGuiWindow.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
+    <ClCompile Include="src\InverseKinematicManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Model.cpp" />
@@ -93,6 +94,7 @@
     <ClInclude Include="include\ImGuiUIManager.h" />
     <ClInclude Include="include\ImGuiWindow.h" />
     <ClInclude Include="include\InputManager.h" />
+    <ClInclude Include="include\InverseKinematicManager.h" />
     <ClInclude Include="include\LibHeader.h" />
     <ClInclude Include="include\magic_enum.hpp" />
     <ClInclude Include="include\ManagerBase.h" />
