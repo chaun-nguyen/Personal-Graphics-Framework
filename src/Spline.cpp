@@ -11,11 +11,11 @@ controlPointVAO(0), controlPointVBO(0), controlPointEBO(0)
 {
 }
 
-void Spline::Draw(ShaderProgram* shader)
+void Spline::Draw(ShaderProgram* shader, glm::vec3 color)
 {
   CHECKERROR;
   int loc = glGetUniformLocation(shader->programID, "color");
-  glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(0.f, 1.f, 0.f)));
+  glUniform3fv(loc, 1, glm::value_ptr(color));
 
   glm::mat4 modelTr = Translate(0.f, 50.f, 0.f) * Scale(500.f, 500.f, 500.f);
 

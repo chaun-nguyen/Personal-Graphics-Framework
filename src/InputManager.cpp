@@ -100,8 +100,8 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
     }
     else if (action == GLFW_RELEASE)
     {
-      cm->key = GLFW_KEY_UNKNOWN;
       ikm->key = GLFW_KEY_UNKNOWN;
+      cm->key = GLFW_KEY_UNKNOWN;
     }
   }
   else

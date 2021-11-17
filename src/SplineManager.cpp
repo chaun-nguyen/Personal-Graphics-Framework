@@ -1,9 +1,7 @@
 #include "SplineManager.h"
-#include <stdexcept>
 #include "Engine.h"
 #include "LibHeader.h"
 #include "Shader.h"
-#include "transform.h"
 
 
 void SplineManager::Setup()
@@ -50,42 +48,7 @@ void SplineManager::Update()
     // sync the velocity from parabolic approach with the animation
     am->animator->speed = GetV(t);
 
-    s = GetS(t);
-
-    // calculate the next step on space curve
-    glm::vec3 Position = currCurve.getInterpolatedPositionOnSpaceCurve(s);
-
-    // orientation control (forward mode)
-    glm::vec3 COI = 
-      currCurve.getInterpolatedPositionOnSpaceCurve(s + 0.001f) +
-      currCurve.getInterpolatedPositionOnSpaceCurve(s + 0.001f * 2.f) +
-      currCurve.getInterpolatedPositionOnSpaceCurve(s + 0.001f * 3.f);
-    COI /= 3.f;
-
-    glm::vec3 W = COI - Position;
-    W = glm::normalize(W);
-    glm::vec3 U = glm::normalize(glm::cross(glm::vec3(0.f, 1.f, 0.f), W));
-    glm::vec3 V = glm::normalize(glm::cross(W, U));
-
-    glm::mat4 M =
-    {
-      glm::vec4(U,0.f),
-      glm::vec4(V,0.f),
-      glm::vec4(W,0.f),
-      glm::vec4(Position,1.f)
-    };
-
-    // scale up to the same size as the curve
-    Position *= 500.f;
-    player->SetPosition(Position);
-    player->BuildModelMatrix();
-
-    // set up player orientation
-    player->ApplyOrientationMatrix(M);
-
-    // set up bone orientation
-    am->animation->SetBoneWorldPosition(Position);
-    am->animation->SetBoneOrientation(M);
+    MoveAlongSpaceCurve(player, currCurve, t);
 
     // step size
     t += Engine::managers_.GetManager<FrameRateManager*>()->delta_time / 10.f;
@@ -99,18 +62,25 @@ void SplineManager::Update()
 
 void SplineManager::Draw(ShaderProgram* shader)
 {
-  if (index >= 0)
+  for (int i = 0; i < spaceCurves.size(); ++i)
   {
-    // draw path
-    spaceCurves[index].Draw(shader);
+    spaceCurves[i].Draw(shader, colors[i]);
   }
-  else
-    throw std::runtime_error("Invalid index to draw space curve");
 }
 
 Spline& SplineManager::GetCurve(int index)
 {
   return spaceCurves[index];
+}
+
+void SplineManager::AddCurve(Spline& curve)
+{
+  spaceCurves.emplace_back(curve);
+}
+
+int SplineManager::GetSize()
+{
+  return spaceCurves.size();
 }
 
 // speed control distance-time function (parabolic ease in/out approach)
@@ -186,6 +156,47 @@ float SplineManager::GetV(float t)
     return EvalV3(t);
 
   return EvalV2(t);
+}
+
+void SplineManager::MoveAlongSpaceCurve(Object* player, Spline& currCurve, float t_)
+{
+  s = GetS(t_);
+
+  // calculate the next step on space curve
+  glm::vec3 Position = currCurve.getInterpolatedPositionOnSpaceCurve(s);
+
+  // orientation control (forward mode)
+  glm::vec3 COI =
+    currCurve.getInterpolatedPositionOnSpaceCurve(s + 0.001f) +
+    currCurve.getInterpolatedPositionOnSpaceCurve(s + 0.001f * 2.f) +
+    currCurve.getInterpolatedPositionOnSpaceCurve(s + 0.001f * 3.f);
+  COI /= 3.f;
+
+  glm::vec3 W = COI - Position;
+  W = glm::normalize(W);
+  glm::vec3 U = glm::normalize(glm::cross(glm::vec3(0.f, 1.f, 0.f), W));
+  glm::vec3 V = glm::normalize(glm::cross(W, U));
+
+  glm::mat4 M =
+  {
+    glm::vec4(U,0.f),
+    glm::vec4(V,0.f),
+    glm::vec4(W,0.f),
+    glm::vec4(Position,1.f)
+  };
+
+  // scale up to the same size as the curve
+  Position *= 500.f;
+  player->SetPosition(Position);
+  player->BuildModelMatrix();
+
+  // set up player orientation
+  player->ApplyOrientationMatrix(M);
+
+  auto* am = Engine::managers_.GetManager<AnimationManager*>();
+  // set up bone orientation
+  am->animation->SetBoneWorldPosition(Position);
+  am->animation->SetBoneOrientation(M);
 }
 
 

@@ -234,6 +234,9 @@ void ImGuiUIManager::Update()
 
     ImGui::Checkbox("Path Draw", &rm->splineDraw);
 
+    auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
+    ImGui::Checkbox("Start IK", &ikm->runFlag);
+
     if (am->PlayAnimation)
     {
       ImGui::Text("Sliding & Skidding Control");

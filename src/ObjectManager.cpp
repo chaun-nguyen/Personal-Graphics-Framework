@@ -84,7 +84,7 @@ void ObjectManager::Setup()
   box->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   box->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
   box->tiling = 1.f;
-  box->SetPosition({ 0.0f,100.0f,0.0f });
+  box->SetPosition({ 500.0f,100.0f,500.0f });
   box->SetRotation(0.f);
   box->SetScale({ 100.f,100.f,100.f });
   box->BuildModelMatrix();
@@ -490,6 +490,25 @@ void ObjectManager::SectionLoader(const char* path)
     am->animator = std::make_unique<Animator>(am->animation.get());
 
     am->animation->SetUpVAO();
+
+    auto* sm = Engine::managers_.GetManager<SplineManager*>();
+    // add player position as the first control point
+    glm::vec3 firstcontrolPts = testObj->GetPosition() / 500.f;
+    firstcontrolPts.y = 0.f;
+    glm::vec3 lastControlPts = Engine::managers_.GetManager<InverseKinematicManager*>()->EndEffector->GetPosition() / 500.f;
+    lastControlPts.y = 0.f;
+    glm::vec3 middlePts = (firstcontrolPts + lastControlPts) / 2.f;
+    middlePts.x += 1.f;
+    //lastControlPts.x = lastControlPts.x > 0.f ? lastControlPts.x - 0.5f : lastControlPts.x + 0.5f;
+    //lastControlPts.z = lastControlPts.z > 0.f ? lastControlPts.z - 0.5f : lastControlPts.z + 0.5f;
+
+    Spline path;
+    path.Add(firstcontrolPts);
+    path.Add(middlePts);
+    path.Add(lastControlPts);
+    path.Construct();
+    sm->AddCurve(path);
+    Engine::managers_.GetManager<InverseKinematicManager*>()->SpaceCurveIndex = sm->GetSize() - 1;
 
     // create bounding volume
     //testObj->model->CreateBoundingBox();

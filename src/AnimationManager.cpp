@@ -12,7 +12,7 @@ void AnimationManager::Setup()
 
 void AnimationManager::Update()
 {
-  if (PlayAnimation)
+  if (PlayAnimation || Engine::managers_.GetManager<InverseKinematicManager*>()->runFlag)
   {
     if (animation && animator)
     {

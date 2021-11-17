@@ -1,5 +1,6 @@
 #pragma once
 #include "ManagerBase.h"
+#include "Spline.h"
 
 class Object;
 
@@ -14,7 +15,13 @@ public:
 
   Object* EndEffector = nullptr;
   int key;
+  int SpaceCurveIndex;
+  bool runFlag;
 private:
   int speed;
+  float t;
   void Movement();
+  void UpdatePath();
+  void StartIK();
+  void CCDSolver();
 };

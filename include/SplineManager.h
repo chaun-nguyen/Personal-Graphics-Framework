@@ -2,6 +2,8 @@
 #include "ManagerBase.h"
 #include "Spline.h"
 
+class Object;
+
 class SplineManager : public ManagerBase<SplineManager>
 {
 public:
@@ -17,6 +19,9 @@ public:
   int index = 0; // only one space curve for now
 
   Spline& GetCurve(int index);
+  void AddCurve(Spline& curve);
+  int GetSize();
+  void MoveAlongSpaceCurve(Object* player, Spline& currCurve, float t);
 
   // speed control distance-time function (parabolic ease in/out approach)
   float t1;
@@ -42,4 +47,10 @@ private:
   float EvalV2(float t);
   float EvalV3(float t);
   float GetV(float t);
+
+  std::vector<glm::vec3> colors =
+  {
+    {0.f,1.f,0.f},
+    {0.f,0.f,1.f}
+  };
 };

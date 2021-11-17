@@ -23,7 +23,7 @@ public:
 
   Spline(const std::vector<glm::vec3>& pts);
 
-  void Draw(ShaderProgram* shader);
+  void Draw(ShaderProgram* shader, glm::vec3 color);
 
   void Construct();
 
