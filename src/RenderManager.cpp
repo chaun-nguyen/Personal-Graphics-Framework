@@ -60,7 +60,6 @@ void RenderManager::Setup()
 
 void RenderManager::Update()
 {
-  BeginFrame();
   MRT_Pass();
   ShadowPass();
   LightingPass();

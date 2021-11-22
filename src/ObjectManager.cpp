@@ -84,7 +84,7 @@ void ObjectManager::Setup()
   box->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   box->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
   box->tiling = 1.f;
-  box->SetPosition({ 500.0f,100.0f,500.0f });
+  box->SetPosition({ 500.0f,800.0f,500.0f });
   box->SetRotation(0.f);
   box->SetScale({ 100.f,100.f,100.f });
   box->BuildModelMatrix();

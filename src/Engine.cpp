@@ -49,6 +49,8 @@ void Engine::Run()
 
 void Engine::Step()
 {
+  managers_.GetManager<RenderManager*>()->BeginFrame();
+
   managers_.GetManager<WindowManager*>()->Update();
 
   managers_.GetManager<FrameRateManager*>()->Update();

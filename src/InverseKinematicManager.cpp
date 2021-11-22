@@ -10,6 +10,7 @@
 
 void InverseKinematicManager::Setup()
 {
+  IKChainModelMatrix = Translate(IKChainWorldLocation.x, IKChainWorldLocation.y, IKChainWorldLocation.z) * Scale(5.f, 5.f, 5.f);
   speed = 3000.0f;
   runFlag = false;
   t = 0.f;
@@ -25,25 +26,20 @@ void InverseKinematicManager::Update()
 
   if (runFlag)
   {
-    StartIK();
     UpdateVBO();
+    StartIK();
   }
 }
 
 void InverseKinematicManager::DrawIKChain(ShaderProgram* shaderProgram)
 {
+  // draw Links
   CHECKERROR;
   int loc = glGetUniformLocation(shaderProgram->programID, "color");
   glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(1.f, 0.f, 1.f)));
 
-  // world space
-  glm::mat4 modelTr =
-    Translate(IKChainWorldLocation.x, IKChainWorldLocation.y, IKChainWorldLocation.z) * Scale(5.f, 5.f, 5.f);
-
-  modelTr *= IKChainOrientationMatrix;
-
   loc = glGetUniformLocation(shaderProgram->programID, "ModelTr");
-  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(modelTr));
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(IKChainModelMatrix));
   CHECKERROR;
 
   glBindVertexArray(IKChainVAO);
@@ -52,16 +48,30 @@ void InverseKinematicManager::DrawIKChain(ShaderProgram* shaderProgram)
   CHECKERROR;
   glBindVertexArray(0);
   CHECKERROR;
+
+  // draw Joints
+  loc = glGetUniformLocation(shaderProgram->programID, "color");
+  glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(0.f, 1.f, 0.f)));
+  // draw control points
+  glBindVertexArray(IKChainVAO);
+  CHECKERROR;
+  glPointSize(3.f);
+  glDrawElements(GL_POINTS, static_cast<GLsizei>(IKChainIndices.size()), GL_UNSIGNED_INT, 0);
+  CHECKERROR;
+
+  glBindVertexArray(0);
+  CHECKERROR;
 }
 
 void InverseKinematicManager::SetBoneWorldPosition(glm::vec3 pos)
 {
   IKChainWorldLocation = pos;
+  IKChainModelMatrix = Translate(IKChainWorldLocation.x, IKChainWorldLocation.y, IKChainWorldLocation.z) * Scale(5.f, 5.f, 5.f);
 }
 
 void InverseKinematicManager::SetBoneOrientation(glm::mat4& mat)
 {
-  IKChainOrientationMatrix = mat;
+  IKChainModelMatrix *= mat;
 }
 
 void InverseKinematicManager::UpdateVBO()
@@ -74,12 +84,17 @@ void InverseKinematicManager::UpdateVBO()
   
   // get each bone local position
   // and layout continuously
-  for (int i = 0; i < IKChainPosition.size(); ++i)
+  for (int i = 0; i < ikChain.size(); ++i)
   {
-    // local-space position
-    IKChainPosition[i] =
-      glm::vec3(am->animator->m_PreOffSetMatrices[boneInfoMap[ikChain[i].name].id] *
-        glm::vec4(ikChain[i].localPosition, 1.f));
+    // m_PreOffSetMatrices get update every frame as player is animated
+    // hierarchically calculate the world position of each joints inside IK chain
+    glm::mat4 transformation = am->animator->m_PreOffSetMatrices[boneInfoMap[ikChain[i].name].id];
+
+    // update bone position inside IK chain for drawing purpose
+    IKChainPosition[i] = glm::vec3(transformation * glm::vec4(ikChain[i].localPosition, 1.f));
+    
+    // saved world position for CCD algorithm solving IK
+    ikChain[i].worldPosition = glm::vec3(IKChainModelMatrix * glm::vec4(IKChainPosition[i],1.f));
   }
   CHECKERROR;
   glInvalidateBufferData(IKChainVBO);
@@ -176,7 +191,7 @@ void InverseKinematicManager::StartIK()
   t += Engine::managers_.GetManager<FrameRateManager*>()->delta_time / 10.f;
   
   
-  if (t > 0.9f)
+  if (t > 0.825f)
   {
     runFlag = false;
     auto& controlPts = curve.GetControlPoints();
@@ -194,9 +209,27 @@ void InverseKinematicManager::StartIK()
     controlPts.push_back(lastControlPts);
 
     t = 0.f;
+
+    CCDSolver();
   }
 }
 
 void InverseKinematicManager::CCDSolver()
 {
+  glm::vec3 goal = Goal->GetPosition();
+  //goal.y += 600.f;
+  m_CCDSolver.Solve(goal);
+
+  auto& ikChain = m_CCDSolver.getChain();
+  for (int i = 0; i < ikChain.size(); ++i)
+  {
+    IKChainPosition[i] = glm::vec3(glm::inverse(IKChainModelMatrix) * glm::vec4(ikChain[i].worldPosition, 1.f));
+  }
+
+  CHECKERROR;
+  glInvalidateBufferData(IKChainVBO);
+  CHECKERROR;
+  glNamedBufferSubData(IKChainVBO, 0, IKChainPosition.size() * sizeof(glm::vec3),
+    IKChainPosition.data());
+  CHECKERROR;
 }

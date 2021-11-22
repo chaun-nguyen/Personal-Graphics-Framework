@@ -15,7 +15,7 @@ public:
   CCDSolver();
 
   IKData& operator[](unsigned index);
-  glm::vec3 getWorldLocation(unsigned index);
+  IKData& getWorldTransform(unsigned index);
 
   unsigned getSize();
   void Resize(unsigned newSize);
@@ -31,8 +31,13 @@ public:
 
   bool Solve(glm::vec3& worldLocationGoal);
 
+  void ApplyTransformHierarchically(int startIndex, glm::mat4 M);
+
 private:
   std::vector<IKData> IKChain;
   unsigned numSteps;
   float threshHold;
+  glm::vec3 Pd;
+  glm::vec3 Pc;
+  glm::vec3 Pv;
 };

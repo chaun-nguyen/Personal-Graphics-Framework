@@ -40,7 +40,7 @@ public:
 private:
   // motion along a space curve
   glm::vec3 IKChainWorldLocation = { 0.f,0.f,0.f };
-  glm::mat4 IKChainOrientationMatrix = glm::mat4(1.f);
+  glm::mat4 IKChainModelMatrix = glm::mat4(1.f);
 
   int speed;
   float t;

@@ -4,6 +4,7 @@
 #include <glm/detail/func_trigonometric.hpp>
 #include <glm/detail/type_mat3x3.hpp>
 #include <glm/detail/type_mat4x4.hpp>
+#include <glm/gtx/norm.hpp>
 
 Quaternion::Quaternion() : _s(1.0), _v(0) // identity quaternion
 {
@@ -154,6 +155,50 @@ glm::mat4 Quaternion::toMat4()
   glm::mat3 res = this->toMat3();
 
   return glm::mat4(res);
+}
+
+Quaternion Quaternion::rotate(glm::vec3& orig, glm::vec3& dest)
+{
+  Quaternion result;
+
+  // ensure vectors are normalized
+  orig = glm::normalize(orig);
+  dest = glm::normalize(dest);
+
+  float cosTheta = glm::dot(orig, dest);
+  glm::vec3 rotationAxis;
+
+  if (cosTheta < -1.f + std::numeric_limits<float>::epsilon())
+  {
+    rotationAxis = glm::cross(glm::vec3(0, 0, 1), orig);
+    if (glm::length2(rotationAxis) < std::numeric_limits<float>::epsilon())
+      rotationAxis = glm::cross(glm::vec3(1, 0, 0), orig);
+
+    rotationAxis = glm::normalize(rotationAxis);
+    return angleAxis(glm::pi<float>(), rotationAxis);
+  }
+
+  // Implementation from Stan Melax's Game Programming Gems 1 article
+  rotationAxis = glm::cross(orig, dest);
+  float s = glm::sqrt((1.f + cosTheta) * 2.f);
+  float invs = 1.f / s;
+
+  result._s = s * 0.5f;
+  result._v = rotationAxis * invs;
+
+  return result;
+}
+
+Quaternion Quaternion::angleAxis(float angle, glm::vec3& v)
+{
+  Quaternion result;
+
+  float s = glm::sin(angle * 0.5f);
+
+  result._s = glm::cos(angle * 0.5f);
+  result._v = v * s;
+
+  return result;
 }
 
 Quaternion Interpolation::lerp(Quaternion q1, Quaternion q2, float t)

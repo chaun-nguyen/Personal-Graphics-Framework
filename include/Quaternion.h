@@ -69,6 +69,12 @@ public:
   glm::mat3 toMat3();
   glm::mat4 toMat4();
 
+  // rotate from vector to vector
+  Quaternion rotate(glm::vec3& orig, glm::vec3& dest);
+
+  // build a quaternion from an angle and an axis
+  Quaternion angleAxis(float angle, glm::vec3& v);
+
   // representation of a quaternion
   float _s;     // scalar factor
   glm::vec3 _v; // vector

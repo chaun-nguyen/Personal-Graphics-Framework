@@ -172,8 +172,8 @@ void SkeletalAnimation::SetUpHierarchicalRender(const NodeData& root, std::map<s
     index = bonePosition.size() - 1;
 
     // Set Up IK Chain
-    if (root.name == "RightShoulder" || root.name == "RightArm" || root.name == "RightForeArm" || root.name == "RightHand"
-      || root.name == "RightHandIndex1" || root.name == "RightHandIndex2" || root.name == "RightHandIndex3")
+    if (root.name == "LeftShoulder" || root.name == "LeftArm" || root.name == "LeftForeArm" || root.name == "LeftHand"
+      || root.name == "LeftHandIndex1" || root.name == "LeftHandIndex2" || root.name == "LeftHandIndex3")
     {
       auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
       IKData data;
