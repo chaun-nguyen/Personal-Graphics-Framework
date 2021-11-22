@@ -39,6 +39,7 @@ public:
   void SimplexPass(DebugDrawType type);
   void BonePass();
   void SplinePass();
+  void IKChainPass();
 
   ShaderProgram* MRT_Program = nullptr;
   ShaderProgram* BRDF_Program = nullptr;
@@ -65,6 +66,7 @@ public:
   bool debugDraw = false;
   bool boneDraw = false;
   bool splineDraw = true;
+  bool IKChainDraw = false;
   bool simplexDraw = false; // gjk
   int debugDrawType = to_integral(DebugDrawType::Invalid);
   bool depthCopy = true;

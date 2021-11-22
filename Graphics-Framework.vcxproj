@@ -36,6 +36,7 @@
     <ClCompile Include="src\Box.cpp" />
     <ClCompile Include="src\BspTree.cpp" />
     <ClCompile Include="src\CameraManager.cpp" />
+    <ClCompile Include="src\CCDSolver.cpp" />
     <ClCompile Include="src\DeserializeManager.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\FBO.cpp" />
@@ -85,6 +86,7 @@
     <ClInclude Include="include\Box.h" />
     <ClInclude Include="include\BspTree.h" />
     <ClInclude Include="include\CameraManager.h" />
+    <ClInclude Include="include\CCDSolver.h" />
     <ClInclude Include="include\DeserializeManager.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\FBO.h" />

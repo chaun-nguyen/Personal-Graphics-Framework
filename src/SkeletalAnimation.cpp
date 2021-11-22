@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "Engine.h"
 #include "Transform.h"
 
 void SkeletalAnimation::ReadMissingBones(const aiAnimation* animation, Model& model)
@@ -115,6 +116,7 @@ void SkeletalAnimation::DrawBone(ShaderProgram* shaderProgram)
   int loc = glGetUniformLocation(shaderProgram->programID, "color");
   glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(0.f, 1.f, 0.f)));
 
+  // world space
   glm::mat4 modelTr = 
     Translate(boneWorldLocation.x, boneWorldLocation.y, boneWorldLocation.z) * Scale(5.f, 5.f, 5.f);
 
@@ -139,6 +141,7 @@ void SkeletalAnimation::SetUpHierarchicalRender(const NodeData& root, std::map<s
 
   if (bone)
   {
+    //std::cout << bone->getBoneName() << std::endl;
     // preset index = -1 to delay 1 call to draw hierarchial bones correctly where it starts at hips, start recording at spine
     if (index != -1)
       boneIndices.push_back(index);
@@ -167,6 +170,22 @@ void SkeletalAnimation::SetUpHierarchicalRender(const NodeData& root, std::map<s
 
     // update index
     index = bonePosition.size() - 1;
+
+    // Set Up IK Chain
+    if (root.name == "RightShoulder" || root.name == "RightArm" || root.name == "RightForeArm" || root.name == "RightHand"
+      || root.name == "RightHandIndex1" || root.name == "RightHandIndex2" || root.name == "RightHandIndex3")
+    {
+      auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
+      IKData data;
+      data.name = bone->getBoneName();
+      data.worldPosition = glm::vec3(finalPosition);
+      data.localPosition = localPosition.xyz;
+
+      ikm->m_CCDSolver.AddBoneToChain(data);
+
+      // data to draw IK chain (final position)
+      ikm->IKChainPosition.push_back(data.worldPosition);
+    }
   }
 
   // recursively through the hierarchical bones

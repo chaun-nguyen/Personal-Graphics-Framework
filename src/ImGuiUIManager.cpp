@@ -237,6 +237,8 @@ void ImGuiUIManager::Update()
     auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
     ImGui::Checkbox("Start IK", &ikm->runFlag);
 
+    ImGui::Checkbox("IK Chain Draw", &rm->IKChainDraw);
+
     if (am->PlayAnimation)
     {
       ImGui::Text("Sliding & Skidding Control");

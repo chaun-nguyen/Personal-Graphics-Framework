@@ -90,7 +90,7 @@ void ObjectManager::Setup()
   box->BuildModelMatrix();
 
   Add(box);
-  Engine::managers_.GetManager<InverseKinematicManager*>()->EndEffector = box;
+  Engine::managers_.GetManager<InverseKinematicManager*>()->Goal = box;
 
   // plane
   Shape* planePolygon = new Plane(6000.0f, 10);
@@ -489,13 +489,16 @@ void ObjectManager::SectionLoader(const char* path)
     am->animation = std::make_unique<SkeletalAnimation>(p, testObj->model);
     am->animator = std::make_unique<Animator>(am->animation.get());
 
+    // set up VAO for bone draw hierarchically
     am->animation->SetUpVAO();
+    auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
+    ikm->SetUpVAO();
 
     auto* sm = Engine::managers_.GetManager<SplineManager*>();
     // add player position as the first control point
     glm::vec3 firstcontrolPts = testObj->GetPosition() / 500.f;
     firstcontrolPts.y = 0.f;
-    glm::vec3 lastControlPts = Engine::managers_.GetManager<InverseKinematicManager*>()->EndEffector->GetPosition() / 500.f;
+    glm::vec3 lastControlPts = Engine::managers_.GetManager<InverseKinematicManager*>()->Goal->GetPosition() / 500.f;
     lastControlPts.y = 0.f;
     glm::vec3 middlePts = (firstcontrolPts + lastControlPts) / 2.f;
     middlePts.x += 1.f;
@@ -508,7 +511,7 @@ void ObjectManager::SectionLoader(const char* path)
     path.Add(lastControlPts);
     path.Construct();
     sm->AddCurve(path);
-    Engine::managers_.GetManager<InverseKinematicManager*>()->SpaceCurveIndex = sm->GetSize() - 1;
+    ikm->SpaceCurveIndex = sm->GetSize() - 1;
 
     // create bounding volume
     //testObj->model->CreateBoundingBox();

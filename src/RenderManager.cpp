@@ -72,6 +72,8 @@ void RenderManager::Update()
     BonePass();
   if (splineDraw)
     SplinePass();
+  if (IKChainDraw)
+    IKChainPass();
   FSQ();
 }
 
@@ -214,6 +216,30 @@ void RenderManager::SplinePass()
 
   CHECKERROR;
   Spline_Program->UnUse();
+  lightFbo_.Unbind();
+}
+
+void RenderManager::IKChainPass()
+{
+  glViewport(0, 0, width, height);
+  CHECKERROR;
+  glDisable(GL_DEPTH_TEST); // so bone always in front of model
+  CHECKERROR;
+  lightFbo_.Bind();
+  Bone_Program->Use();
+
+  int loc = glGetUniformLocation(Bone_Program->programID, "WorldView");
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldView));
+  CHECKERROR;
+
+  loc = glGetUniformLocation(Bone_Program->programID, "WorldProj");
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldProj));
+  CHECKERROR;
+
+  Engine::managers_.GetManager<InverseKinematicManager*>()->DrawIKChain(Bone_Program);
+
+  CHECKERROR;
+  Bone_Program->UnUse();
   lightFbo_.Unbind();
 }
 

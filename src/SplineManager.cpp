@@ -194,9 +194,15 @@ void SplineManager::MoveAlongSpaceCurve(Object* player, Spline& currCurve, float
   player->ApplyOrientationMatrix(M);
 
   auto* am = Engine::managers_.GetManager<AnimationManager*>();
+  auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
+
   // set up bone orientation
   am->animation->SetBoneWorldPosition(Position);
   am->animation->SetBoneOrientation(M);
+
+  // set up IK Chain orientation
+  ikm->SetBoneWorldPosition(Position);
+  ikm->SetBoneOrientation(M);
 }
 
 
