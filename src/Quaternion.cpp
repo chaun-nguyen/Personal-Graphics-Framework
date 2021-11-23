@@ -127,6 +127,11 @@ float Quaternion::angleDegree()
   return glm::degrees(glm::acos(_s) * 2.f);
 }
 
+glm::vec3 Quaternion::getAxis()
+{
+  return glm::normalize(_v);
+}
+
 glm::mat3 Quaternion::toMat3()
 {
   glm::mat3 res;
@@ -152,7 +157,7 @@ glm::mat4 Quaternion::toMat4()
   return glm::mat4(res);
 }
 
-Quaternion Quaternion::rotate(glm::vec3& orig, glm::vec3& dest)
+Quaternion QUATERNION::rotate(glm::vec3& orig, glm::vec3& dest)
 {
   Quaternion result;
 
@@ -184,7 +189,7 @@ Quaternion Quaternion::rotate(glm::vec3& orig, glm::vec3& dest)
   return result;
 }
 
-Quaternion Quaternion::angleAxis(float angle, glm::vec3& v)
+Quaternion QUATERNION::angleAxis(float angle, glm::vec3& v)
 {
   Quaternion result;
 

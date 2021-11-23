@@ -90,20 +90,20 @@ bool CCDSolver::Solve(glm::vec3& worldLocationGoal)
       Vck = glm::normalize(Vck);
       Vdk = glm::normalize(Vdk);
 
+      // build a quaternion that rotation from Vck to Vdk
+      world.worldRotation = QUATERNION::rotate(Vck, Vdk);
+      world.worldRotation = world.worldRotation.normalize();
+
       // find angle between Vck and Vdk
-      float alpha = glm::angle(Vck, Vdk);
+      float alpha = world.worldRotation.angleRadian();
 
       // remove small angle
       if (alpha < 0.1f)
         continue;
 
-      // compute the rotation axis
-      glm::vec3 axis = glm::normalize(glm::cross(Vck, Vdk));
-
-      // build a quaternion that rotation from Vck to Vdk
-      glm::quat rotation = glm::angleAxis(alpha, axis);
-      rotation = glm::normalize(rotation);
-      world.worldRotation = Quaternion(rotation.w, rotation.x, rotation.y, rotation.z);//world.worldRotation.rotate(Vck, Vdk);
+      // apply hinge constraint to elbow joint
+      if (world.name == "LeftForeArm")
+        ApplyHingeConstraint(j, world.worldRotation.getAxis());
 
       // apply transformation hierarchically through the IK chain
       ApplyTransformHierarchically(j, world.worldRotation.toMat4());
@@ -138,4 +138,15 @@ void CCDSolver::ApplyTransformHierarchically(int startIndex, glm::mat4 M)
   }
 
   intermediatePosition.push_back(IKChain);
+}
+
+void CCDSolver::ApplyHingeConstraint(int index, glm::vec3 axis)
+{
+  IKData& joint = getWorldTransform(index);
+  IKData& parent = getWorldTransform(index + 1);
+
+  glm::vec3 currHinge = joint.worldRotation * axis;
+  glm::vec3 desHinge = parent.worldRotation * axis;
+
+  IKChain[index].worldRotation *= QUATERNION::rotate(currHinge, desHinge);
 }

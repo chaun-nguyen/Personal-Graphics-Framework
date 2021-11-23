@@ -50,7 +50,7 @@ void InverseKinematicManager::DrawIKChain(ShaderProgram* shaderProgram)
   // draw Links
   CHECKERROR;
   int loc = glGetUniformLocation(shaderProgram->programID, "color");
-  glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(0.f, 0.1f, 1.f)));
+  glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(1.f, 0.f, 0.f)));
 
   loc = glGetUniformLocation(shaderProgram->programID, "ModelTr");
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(IKChainModelMatrix));
@@ -65,7 +65,7 @@ void InverseKinematicManager::DrawIKChain(ShaderProgram* shaderProgram)
 
   // draw Joints
   loc = glGetUniformLocation(shaderProgram->programID, "color");
-  glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(1.f, 0.f, 0.f)));
+  glUniform3fv(loc, 1, glm::value_ptr(glm::vec3(0.f, 0.f, 1.f)));
   // draw control points
   glBindVertexArray(IKChainVAO);
   CHECKERROR;
@@ -288,7 +288,7 @@ void InverseKinematicManager::AnimateIK()
 {
   auto& intermediatePosition = m_CCDSolver.getIntermediatePosition();
 
-  for (int i = 1; i < m_CCDSolver.getChain().size(); ++i)
+  for (int i = 0; i < m_CCDSolver.getChain().size(); ++i)
   {
     IKChainPosition[i] = glm::mix(IKChainPosition[i], intermediatePosition[keyFrame][i].worldPosition, step);
   }

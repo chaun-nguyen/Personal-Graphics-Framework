@@ -37,6 +37,8 @@ public:
 
   void ApplyTransformHierarchically(int startIndex, glm::mat4 M);
 
+  void ApplyHingeConstraint(int index, glm::vec3 axis);
+
 private:
   std::vector<IKData> IKChain;
   std::vector<std::vector<IKData>> intermediatePosition;
