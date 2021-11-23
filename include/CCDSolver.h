@@ -38,6 +38,7 @@ public:
   void ApplyTransformHierarchically(int startIndex, glm::mat4 M);
 
   void ApplyHingeConstraint(int index, glm::vec3 axis);
+  void ApplyBallSocketConstraint(int index, float limit);
 
 private:
   std::vector<IKData> IKChain;

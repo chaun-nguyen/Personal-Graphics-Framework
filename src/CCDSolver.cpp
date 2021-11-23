@@ -101,9 +101,21 @@ bool CCDSolver::Solve(glm::vec3& worldLocationGoal)
       if (alpha < 0.1f)
         continue;
 
-      // apply hinge constraint to elbow joint
+      // apply hinge constraint to elbow joint to prevent bending outwardly which is unrealistic
       if (world.name == "LeftForeArm")
         ApplyHingeConstraint(j, world.worldRotation.getAxis());
+
+      // apply hinge constraint to finger joints to prevent bending outwardly which is unrealistic
+      if (world.name == "LeftHandIndex1" || world.name == "LeftHandIndex2" || world.name == "LeftHandIndex3")
+        ApplyHingeConstraint(j, world.worldRotation.getAxis());
+
+      // apply ball-and-socket constraint to shoulder joint
+      if (world.name == "LeftArm")
+        ApplyBallSocketConstraint(j, 2.617993878f); // 150 degree
+        
+      // apply ball-and-socket constraint to hand joint
+      if (world.name == "LeftHand")
+        ApplyBallSocketConstraint(j, 1.5707963268f); // 90 degree
 
       // apply transformation hierarchically through the IK chain
       ApplyTransformHierarchically(j, world.worldRotation.toMat4());
@@ -149,4 +161,22 @@ void CCDSolver::ApplyHingeConstraint(int index, glm::vec3 axis)
   glm::vec3 desHinge = parent.worldRotation * axis;
 
   IKChain[index].worldRotation *= QUATERNION::rotate(currHinge, desHinge);
+}
+
+void CCDSolver::ApplyBallSocketConstraint(int index, float limit)
+{
+  IKData& joint = getWorldTransform(index);
+  IKData& parent = getWorldTransform(index + 1);
+
+  glm::vec3 jointForwardDir = joint.worldRotation * glm::vec3(0, 0, 1);
+  glm::vec3 parentForwardDir = parent.worldRotation * glm::vec3(0, 0, 1);
+
+  float angle = glm::angle(jointForwardDir, parentForwardDir);
+
+  if (angle > limit)
+  {
+    glm::vec3 correction = glm::cross(parentForwardDir, jointForwardDir);
+    Quaternion wRotation = parent.worldRotation * QUATERNION::angleAxis(limit, correction);
+    IKChain[index].worldRotation = wRotation * parent.worldRotation.inverse();
+  }
 }
