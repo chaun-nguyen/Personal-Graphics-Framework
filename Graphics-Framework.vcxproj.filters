@@ -418,5 +418,11 @@
     <None Include="shaders\spline.vert">
       <Filter>Shader</Filter>
     </None>
+    <None Include="shaders\ik.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shaders\ik.frag">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

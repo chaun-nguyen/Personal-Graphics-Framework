@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "LibHeader.h"
 #include "Transform.h"
+#include <glm/glm/ext/vector_angle.hpp>
 
 CCDSolver::CCDSolver()
 {
@@ -38,6 +39,11 @@ void CCDSolver::AddBoneToChain(IKData newBone)
 std::vector<IKData>& CCDSolver::getChain()
 {
   return IKChain;
+}
+
+std::vector<std::vector<IKData>>& CCDSolver::getIntermediatePosition()
+{
+  return intermediatePosition;
 }
 
 unsigned CCDSolver::getNumSteps()
@@ -87,11 +93,16 @@ bool CCDSolver::Solve(glm::vec3& worldLocationGoal)
       // find angle between Vck and Vdk
       float alpha = glm::angle(Vck, Vdk);
 
+      // remove small angle
+      if (alpha < 0.1f)
+        continue;
+
       // compute the rotation axis
       glm::vec3 axis = glm::normalize(glm::cross(Vck, Vdk));
 
       // build a quaternion that rotation from Vck to Vdk
       glm::quat rotation = glm::angleAxis(alpha, axis);
+      rotation = glm::normalize(rotation);
       world.worldRotation = Quaternion(rotation.w, rotation.x, rotation.y, rotation.z);//world.worldRotation.rotate(Vck, Vdk);
 
       // apply transformation hierarchically through the IK chain
@@ -121,6 +132,10 @@ void CCDSolver::ApplyTransformHierarchically(int startIndex, glm::mat4 M)
 
   for (int i = startIndex + 1; i < IKChain.size(); ++i)
   {
+    // concatenate matrix to build the final transformation matrix
+    IKChain[i].Transformation = transformation * IKChain[i].Transformation;
     IKChain[i].worldPosition = glm::vec3(transformation * glm::vec4(IKChain[i].worldPosition, 1.f));
   }
+
+  intermediatePosition.push_back(IKChain);
 }

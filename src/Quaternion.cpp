@@ -1,10 +1,5 @@
 #include "Quaternion.h"
-
-#include <glm/detail/func_geometric.hpp>
-#include <glm/detail/func_trigonometric.hpp>
-#include <glm/detail/type_mat3x3.hpp>
-#include <glm/detail/type_mat4x4.hpp>
-#include <glm/gtx/norm.hpp>
+#include <glm/glm/gtx/norm.hpp>
 
 Quaternion::Quaternion() : _s(1.0), _v(0) // identity quaternion
 {

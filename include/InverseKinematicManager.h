@@ -4,6 +4,7 @@
 
 class Object;
 class ShaderProgram;
+struct NodeData;
 
 class InverseKinematicManager : public ManagerBase<InverseKinematicManager>
 {
@@ -20,12 +21,15 @@ public:
   int key;
   int SpaceCurveIndex;
   bool runFlag;
+  bool updateFlag;
   CCDSolver m_CCDSolver;
 
   // bones' world location (motion along a space curve)
   void SetBoneWorldPosition(glm::vec3 pos);
   // bones' orientation along a space curve
   void SetBoneOrientation(glm::mat4& mat);
+
+  glm::mat4& getWorldMatrix();
 
   void UpdateVBO();
   // prepare data to draw IK chain
@@ -48,4 +52,11 @@ private:
   void UpdatePath();
   void StartIK();
   void CCDSolver();
+  void AnimateIK();
+  float step;
+  unsigned keyFrame;
+  unsigned jointIndex;
+
+  void ApplyTransformationHierarchy(const NodeData* node, glm::mat4 parentTransform);
+  bool isInsideIKChain(const std::string& name);
 };

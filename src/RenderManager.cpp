@@ -50,7 +50,12 @@ void RenderManager::Setup()
   Spline_Program->AddShader("./shaders/spline.frag", GL_FRAGMENT_SHADER);
   Spline_Program->LinkProgram();
 
-  clearColor_ = { 0.f,0.f,0.f };
+  IK_Program = new ShaderProgram();
+  IK_Program->AddShader("./shaders/ik.vert", GL_VERTEX_SHADER);
+  IK_Program->AddShader("./shaders/ik.frag", GL_FRAGMENT_SHADER);
+  IK_Program->LinkProgram();
+
+  clearColor_ = { 0.22f,0.22f,0.22f };
   // create empty vao
   glCreateVertexArrays(1, &emptyVAOid_);
   sun.SunIntensity = 5.0f;
@@ -169,10 +174,16 @@ void RenderManager::BonePass()
 {
   glViewport(0, 0, width, height);
   CHECKERROR;
-  glDisable(GL_DEPTH_TEST); // so bone always in front of model
+  //glDisable(GL_DEPTH_TEST); // so bone always in front of model
+  glEnable(GL_DEPTH_TEST);
   CHECKERROR;
   lightFbo_.Bind();
   Bone_Program->Use();
+
+  // depth copy
+  CHECKERROR;
+  glBlitNamedFramebuffer(gbuffer_.GetGBufferID(), lightFbo_.fboID, 0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  CHECKERROR;
 
   int loc = glGetUniformLocation(Bone_Program->programID, "WorldView");
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldView));
@@ -222,28 +233,34 @@ void RenderManager::IKChainPass()
 {
   glViewport(0, 0, width, height);
   CHECKERROR;
-  glDisable(GL_DEPTH_TEST); // so bone always in front of model
+  //glDisable(GL_DEPTH_TEST); // so bone always in front of model
+  glEnable(GL_DEPTH_TEST);
   CHECKERROR;
   lightFbo_.Bind();
-  Bone_Program->Use();
+  IK_Program->Use();
 
-  int loc = glGetUniformLocation(Bone_Program->programID, "WorldView");
+  // depth copy
+  CHECKERROR;
+  glBlitNamedFramebuffer(gbuffer_.GetGBufferID(), lightFbo_.fboID, 0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  CHECKERROR;
+
+  int loc = glGetUniformLocation(IK_Program->programID, "WorldView");
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldView));
   CHECKERROR;
 
-  loc = glGetUniformLocation(Bone_Program->programID, "WorldProj");
+  loc = glGetUniformLocation(IK_Program->programID, "WorldProj");
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldProj));
   CHECKERROR;
 
-  Engine::managers_.GetManager<InverseKinematicManager*>()->DrawIKChain(Bone_Program);
+  Engine::managers_.GetManager<InverseKinematicManager*>()->DrawIKChain(IK_Program);
 
   CHECKERROR;
-  Bone_Program->UnUse();
+  IK_Program->UnUse();
   lightFbo_.Unbind();
 }
 
 void RenderManager::BeginFrame()
-{ 
+{
   glViewport(0, 0, width, height);
 
   // blend

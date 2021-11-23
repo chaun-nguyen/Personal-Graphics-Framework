@@ -30,7 +30,8 @@ void CameraManager::Setup()
 
   WorldView = Translate(-tr[0], -tr[1], -tr[2]) * LookAt(eye, eye + lookAtVector, upVector);
   WorldInverse = glm::inverse(WorldView);
-  WorldProj = Perspective(ry * aspectRatio, ry, front, back);
+  //WorldProj = Perspective(ry * aspectRatio, ry, front, back);
+  WorldProj = glm::perspective(fov, aspectRatio, front, back);
 }
 
 void CameraManager::Update()

@@ -1,5 +1,6 @@
 #pragma once
 #include "LibHeader.h"
+#include <string>
 
 class BoundingVolume;
 class Model;
@@ -47,6 +48,8 @@ public:
 
   int isTextureSupported = 1;
   float tiling = 10.f;
+
+  bool isWireFrame = false;
 private:
   glm::vec3 position;
   glm::vec3 scale;

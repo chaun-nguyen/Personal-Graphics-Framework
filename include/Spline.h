@@ -2,7 +2,7 @@
 #include <stack>
 #include <vector>
 #include <Eigen/Dense>
-#include <glm/glm.hpp>
+#include <glm/glm/glm.hpp>
 
 class ShaderProgram;
 

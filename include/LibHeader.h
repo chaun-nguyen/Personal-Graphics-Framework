@@ -5,10 +5,10 @@
 #include <type_traits>
 
 #define GLM_FORCE_RADIANS
-#define GLM_SWIZZLE
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#define GLM_FORCE_SWIZZLE
+#include <glm/glm/glm.hpp>
+#include <glm/glm/ext.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
 
 #define CHECKERROR {GLenum err = glGetError(); if (err != GL_NO_ERROR) { fprintf(stderr, "OpenGL error (at line %s:%d): %d\n", __FILE__, __LINE__, err); exit(-1);} }
 

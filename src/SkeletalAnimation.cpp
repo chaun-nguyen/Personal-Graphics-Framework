@@ -141,7 +141,7 @@ void SkeletalAnimation::SetUpHierarchicalRender(const NodeData& root, std::map<s
 
   if (bone)
   {
-    //std::cout << bone->getBoneName() << std::endl;
+    std::cout << bone->getBoneName() << std::endl;
     // preset index = -1 to delay 1 call to draw hierarchial bones correctly where it starts at hips, start recording at spine
     if (index != -1)
       boneIndices.push_back(index);
@@ -178,6 +178,7 @@ void SkeletalAnimation::SetUpHierarchicalRender(const NodeData& root, std::map<s
       auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
       IKData data;
       data.name = bone->getBoneName();
+      data.index = bonePosition.size() - 1;
       data.worldPosition = glm::vec3(finalPosition);
       data.localPosition = localPosition.xyz;
 

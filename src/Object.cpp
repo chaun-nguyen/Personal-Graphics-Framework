@@ -25,8 +25,13 @@ void Object::Draw()
   CHECKERROR;
   if (shape)
   {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (isWireFrame)
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     shape->DrawVAO();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // enforce draw fill after all
   }
   CHECKERROR;
 }

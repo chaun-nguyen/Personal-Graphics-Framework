@@ -48,6 +48,7 @@ public:
   ShaderProgram* Debug_Program = nullptr;
   ShaderProgram* Bone_Program = nullptr;
   ShaderProgram* Spline_Program = nullptr;
+  ShaderProgram* IK_Program = nullptr;
 
   int width;
   int height;

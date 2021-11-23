@@ -88,6 +88,7 @@ void ObjectManager::Setup()
   box->SetRotation(0.f);
   box->SetScale({ 100.f,100.f,100.f });
   box->BuildModelMatrix();
+  box->isWireFrame = true;
 
   Add(box);
   Engine::managers_.GetManager<InverseKinematicManager*>()->Goal = box;
@@ -125,6 +126,8 @@ void ObjectManager::Setup()
 
   //gjk
   gjkController.simplex = new Simplex();
+
+  renderModel = false;
 
   //Object* backpackObj = new Object("./model/backpack/backpack.obj", true);
   //backpackObj->SetPosition({ 0.f,15.f,0.f });
@@ -512,6 +515,10 @@ void ObjectManager::SectionLoader(const char* path)
     path.Construct();
     sm->AddCurve(path);
     ikm->SpaceCurveIndex = sm->GetSize() - 1;
+
+    auto* rm = Engine::managers_.GetManager<RenderManager*>();
+    rm->boneDraw = true;
+    rm->IKChainDraw = true;
 
     // create bounding volume
     //testObj->model->CreateBoundingBox();

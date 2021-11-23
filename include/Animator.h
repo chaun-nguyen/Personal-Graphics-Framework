@@ -7,8 +7,6 @@ class SkeletalAnimation;
 
 class Animator
 {
-private:
-  void CalculateBoneTransform(const NodeData* node, glm::mat4 parentTransform);
 public:
   Animator(SkeletalAnimation* animation);
   ~Animator() = default;
@@ -23,6 +21,8 @@ public:
   float SlidingSkiddingControl = 1.f;
 
   void UpdateVBO();
+
+  void CalculateBoneTransform(const NodeData* node, glm::mat4 parentTransform);
 
   std::vector<glm::mat4> m_PreOffSetMatrices;
 private:

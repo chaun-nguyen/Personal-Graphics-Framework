@@ -3,6 +3,7 @@
 #include "Quaternion.h"
 
 #include <vector>
+#include <string>
 
 struct aiNodeAnim;
 

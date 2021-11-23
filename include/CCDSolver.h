@@ -7,6 +7,8 @@ struct IKData
   glm::vec3 worldPosition;
   glm::vec3 localPosition;
   Quaternion worldRotation;
+  glm::mat4 Transformation = glm::mat4(1.f);
+  unsigned index;
 };
 
 class CCDSolver
@@ -23,6 +25,8 @@ public:
   void AddBoneToChain(IKData newBone);
   std::vector<IKData>& getChain();
 
+  std::vector<std::vector<IKData>>& getIntermediatePosition();
+
   unsigned getNumSteps();
   void setNumSteps(unsigned newNumSteps);
 
@@ -35,6 +39,7 @@ public:
 
 private:
   std::vector<IKData> IKChain;
+  std::vector<std::vector<IKData>> intermediatePosition;
   unsigned numSteps;
   float threshHold;
   glm::vec3 Pd;

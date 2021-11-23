@@ -129,6 +129,8 @@
     <None Include="shaders\DEBUG.vert" />
     <None Include="shaders\FSQ.frag" />
     <None Include="shaders\FSQ.vert" />
+    <None Include="shaders\ik.frag" />
+    <None Include="shaders\ik.vert" />
     <None Include="shaders\MRT.frag" />
     <None Include="shaders\MRT.vert" />
     <None Include="shaders\shadow.frag" />
@@ -248,7 +250,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./libs/Eigen;./libs;./libs/glm;./libs/glfw/include;./libs/glew-2.1.0/include;./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./libs/glm/glm;./libs/Eigen;./libs;./libs/glfw/include;./libs/glew-2.1.0/include;./include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -270,7 +272,7 @@ xcopy /d /y "$(ProjectDir)\libs\assimp\Debug\assimp-vc142-mtd.dll" "$(OutDir)"</
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./libs/Eigen;./libs;./libs/glm;./libs/glfw/include;./libs/glew-2.1.0/include;./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./libs/glm/glm;./libs/Eigen;./libs;./libs/glfw/include;./libs/glew-2.1.0/include;./include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>

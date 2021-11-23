@@ -1,6 +1,7 @@
 #pragma once
-#include <glm/detail/type_mat.hpp>
-#include <glm/detail/type_vec3.hpp>
+#include <glm/glm/vec3.hpp>
+#include <glm/glm/mat3x3.hpp>
+#include <glm/glm/mat4x4.hpp>
 
 class Quaternion;
 
