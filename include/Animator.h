@@ -24,9 +24,10 @@ public:
 
   void CalculateBoneTransform(const NodeData* node, glm::mat4 parentTransform);
 
-  std::vector<glm::mat4> m_PreOffSetMatrices;
+  
 private:
   std::vector<glm::mat4> m_FinalBoneMatrices;
+  std::vector<glm::mat4> m_PreOffSetMatrices;
   SkeletalAnimation* m_CurrentAnimation;
   float m_CurrentTime;
   float m_DeltaTime;

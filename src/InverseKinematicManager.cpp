@@ -100,20 +100,21 @@ void InverseKinematicManager::UpdateVBO()
   auto* am = Engine::managers_.GetManager<AnimationManager*>();
   auto& boneInfoMap = am->animation->GetBoneIDMap();
   auto& ikChain = m_CCDSolver.getChain();
-  
+  auto offsetMatrices = am->animator->GetPreOffSetMatrices();
+
   // get each bone local position
   // and layout continuously
   for (int i = 0; i < ikChain.size(); ++i)
   {
     // m_PreOffSetMatrices get update every frame as player is animated
     // hierarchically calculate the world position of each joints inside IK chain
-    glm::mat4 transformation = am->animator->m_PreOffSetMatrices[boneInfoMap[ikChain[i].name].id];
+    glm::mat4 transformation = offsetMatrices[boneInfoMap[ikChain[i].name].id];
 
     // save world matrices
-    ikChain[i].Transformation = transformation;
+    //ikChain[i].Transformation = transformation;
 
     // update bone position inside IK chain for drawing purpose
-    IKChainPosition[i] = glm::vec3(ikChain[i].Transformation * glm::vec4(ikChain[i].localPosition, 1.f));
+    IKChainPosition[i] = glm::vec3(transformation * glm::vec4(ikChain[i].localPosition, 1.f));
     
     // saved world position for CCD algorithm solving IK
     ikChain[i].worldPosition = IKChainPosition[i];
@@ -246,30 +247,37 @@ void InverseKinematicManager::CCDSolver()
   // clear buffer before going to the next solving iteration
   m_CCDSolver.getIntermediatePosition().clear();
 
+  auto& ikChain = m_CCDSolver.getChain();
+  for (int i = 0; i < ikChain.size(); ++i)
+  {
+    ikChain[i].Transformation = glm::mat4(1.0f); // reset to identity matrix for next ccd iteration
+  }
+
   // ccd solver
   m_CCDSolver.Solve(goalLocalSpace);
 
   // update flag is used for animate the IK chain
-  updateFlag = true;
+  //updateFlag = true;
 
-  //auto* am = Engine::managers_.GetManager<AnimationManager*>();
-  //auto& boneInfoMap = am->animation->GetBoneIDMap();
-  //auto& ikChain = m_CCDSolver.getChain();
-  //for (int i = 0; i < ikChain.size(); ++i)
-  //{
-  //  // update transformation matrix for bones that are inside IK chain
-  //  am->animator->m_PreOffSetMatrices[boneInfoMap[ikChain[i].name].id] = ikChain[i].Transformation;
-  //
-  //  // calculate the final position of bones inside IK chain after running ccd
-  //  IKChainPosition[i] = glm::vec3(ikChain[i].Transformation * glm::vec4(ikChain[i].localPosition, 1.f));
-  //}
-  //
-  //CHECKERROR;
-  //glInvalidateBufferData(IKChainVBO);
-  //CHECKERROR;
-  //glNamedBufferSubData(IKChainVBO, 0, IKChainPosition.size() * sizeof(glm::vec3),
-  //  IKChainPosition.data());
-  //CHECKERROR;
+  auto* am = Engine::managers_.GetManager<AnimationManager*>();
+  auto& boneInfoMap = am->animation->GetBoneIDMap();
+  auto offsetMatrices = am->animator->GetPreOffSetMatrices();
+
+  for (int i = 0; i < ikChain.size(); ++i)
+  {
+    // update transformation matrix for bones that are inside IK chain
+    // calculate the final position of bones inside IK chain after running ccd
+    IKChainPosition[i] = glm::vec3(ikChain[i].Transformation * 
+      offsetMatrices[boneInfoMap[ikChain[i].name].id] *
+      glm::vec4(ikChain[i].localPosition, 1.f));
+  }
+  
+  CHECKERROR;
+  glInvalidateBufferData(IKChainVBO);
+  CHECKERROR;
+  glNamedBufferSubData(IKChainVBO, 0, IKChainPosition.size() * sizeof(glm::vec3),
+    IKChainPosition.data());
+  CHECKERROR;
 
   // apply new transformation matrix hierarchically to the entire bone tree
   //ApplyTransformationHierarchy(&am->animation->GetRootNode(), glm::mat4(1.0f));
@@ -336,7 +344,7 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
 
     int index = boneInfoMap[nodeName].id;
 
-    globalTransformation = parentTransform * am->animator->m_PreOffSetMatrices[index];
+    globalTransformation = parentTransform * am->animator->GetPreOffSetMatrices()[index];
   }
 
   
