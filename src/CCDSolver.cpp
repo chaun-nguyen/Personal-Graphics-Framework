@@ -119,7 +119,7 @@ bool CCDSolver::Solve(glm::vec3& worldLocationGoal)
 
         // apply ball-and-socket constraint to hand joint
         if (world.name == "LeftHand")
-          ApplyBallSocketConstraint(j, 1.5707963268f); // 90 degree
+          ApplyBallSocketConstraint(j, 0.5235987756f); // 30 degree
       }
 
       // apply transformation hierarchically through the IK chain

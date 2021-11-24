@@ -214,7 +214,7 @@ void InverseKinematicManager::StartIK()
   t += Engine::managers_.GetManager<FrameRateManager*>()->delta_time / 10.f;
   
   
-  if (t > 0.825f)
+  if (t > 0.75f)
   {
     runFlag = false;
     auto& controlPts = curve.GetControlPoints();
@@ -271,11 +271,12 @@ void InverseKinematicManager::CCDSolver()
   {
     // update transformation matrix for bones that are inside IK chain
     // calculate the final position of bones inside IK chain after running ccd
-    IKChainPosition[i] = glm::vec3(//ikChain[i].Transformation * 
+    IKChainPosition[i] = glm::vec3(
       offsetMatrices[boneInfoMap[ikChain[i].name].id] *
       glm::vec4(ikChain[i].localPosition, 1.f));
   }
-  
+
+  // update IK Chain (for drawing purpose)
   CHECKERROR;
   glInvalidateBufferData(IKChainVBO);
   CHECKERROR;
@@ -283,12 +284,13 @@ void InverseKinematicManager::CCDSolver()
     IKChainPosition.data());
   CHECKERROR;
 
+  // update all bones (for drawing purpose)
   unsigned size = am->animation->bonePosition.size();
   for (int i = 0; i < size; ++i)
   {
     // local-space position
-    am->animation->bonePosition[i] =
-      glm::vec3(offsetMatrices[boneInfoMap[am->animation->boneName[i]].id] *
+    am->animation->bonePosition[i] = glm::vec3(
+      offsetMatrices[boneInfoMap[am->animation->boneName[i]].id] *
         glm::vec4(am->animation->boneLocalPosition[i], 1.f));
   }
   
@@ -332,35 +334,46 @@ void InverseKinematicManager::AnimateIK()
   step += (1.f / 60.f);//Engine::managers_.GetManager<FrameRateManager*>()->delta_time;
 }
 
+// apply new transformation matrix hierarchically to the entire bone tree
 void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
   std::vector<glm::mat4>& preOffSetMatrices,
   glm::mat4 parentTransform,
   bool enterIKChain)
 {
-  std::string nodeName = node->name;
-  auto* am = Engine::managers_.GetManager<AnimationManager*>();
-  auto& boneInfoMap = am->animation->GetBoneIDMap();
+  std::string nodeName = node->name; // get name of current bone
+  auto* am = Engine::managers_.GetManager<AnimationManager*>(); // get animation handle
+  auto& boneInfoMap = am->animation->GetBoneIDMap(); // get bone info map
 
+  // get correct bone
   Bone* Bone = am->animation->FindBone(nodeName);
 
-  int IKindex = -1;
+  int IKindex = -1; // IK index
+
+  // validate bone
   if (Bone)
   {
+    // if bone are inside IK chain
     if (isInsideIKChain(nodeName, IKindex))
     {
+      // get a reference of IK Chain
       auto& ikChain = m_CCDSolver.getChain();
 
+      // concatenate to get final matrix for each joint hierarchically
       preOffSetMatrices[boneInfoMap[nodeName].id] =
         ikChain[IKindex].Transformation * preOffSetMatrices[boneInfoMap[nodeName].id];
 
+      // pass down update parent transform
       parentTransform = ikChain[IKindex].Transformation;
 
+      // turn on flag to update children that has parent inside IK chain
       enterIKChain = true;
     }
-    else
+    else // not in IK chain
     {
+      // if IK chain is a parent of other bones
       if (enterIKChain)
       {
+        // apply hierarchically to all children that has parent inside IK chain
         preOffSetMatrices[boneInfoMap[nodeName].id] =
           parentTransform *
           preOffSetMatrices[boneInfoMap[nodeName].id];
@@ -368,6 +381,7 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
     }
   }
 
+  // go down the tree (DFS)
   for (int i = 0; i < node->childrenCount; ++i)
   {
     ApplyTransformationHierarchy(&node->children[i], preOffSetMatrices, parentTransform, enterIKChain);
@@ -380,8 +394,10 @@ bool InverseKinematicManager::isInsideIKChain(const std::string& name, int& inde
 
   for (int i = 0; i < ikChain.size(); ++i)
   {
+    // if bone inside IK chain
     if (ikChain[i].name == name)
     {
+      // return index of bone inside IK chain
       index = i;
       return true;
     }
