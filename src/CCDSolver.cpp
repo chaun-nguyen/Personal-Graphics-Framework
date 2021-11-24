@@ -6,8 +6,9 @@
 
 CCDSolver::CCDSolver()
 {
-  numSteps = 15;
+  numSteps = 200;
   threshHold = 0.00001f;
+  applyConstraint = true;
 }
 
 IKData& CCDSolver::operator[](unsigned index)
@@ -101,21 +102,25 @@ bool CCDSolver::Solve(glm::vec3& worldLocationGoal)
       if (alpha < 0.1f)
         continue;
 
-      // apply hinge constraint to elbow joint to prevent bending outwardly which is unrealistic
-      if (world.name == "LeftForeArm")
-        ApplyHingeConstraint(j, world.worldRotation.getAxis());
+      // want to apply constraint?
+      if (applyConstraint)
+      {
+        // apply hinge constraint to elbow joint to prevent bending outwardly which is unrealistic
+        if (world.name == "LeftForeArm")
+          ApplyHingeConstraint(j, world.worldRotation.getAxis());
 
-      // apply hinge constraint to finger joints to prevent bending outwardly which is unrealistic
-      if (world.name == "LeftHandIndex1" || world.name == "LeftHandIndex2" || world.name == "LeftHandIndex3")
-        ApplyHingeConstraint(j, world.worldRotation.getAxis());
+        // apply hinge constraint to finger joints to prevent bending outwardly which is unrealistic
+        if (world.name == "LeftHandIndex1" || world.name == "LeftHandIndex2" || world.name == "LeftHandIndex3")
+          ApplyHingeConstraint(j, world.worldRotation.getAxis());
 
-      // apply ball-and-socket constraint to shoulder joint
-      if (world.name == "LeftArm")
-        ApplyBallSocketConstraint(j, 2.617993878f); // 150 degree
-        
-      // apply ball-and-socket constraint to hand joint
-      if (world.name == "LeftHand")
-        ApplyBallSocketConstraint(j, 1.5707963268f); // 90 degree
+        // apply ball-and-socket constraint to shoulder joint
+        if (world.name == "LeftArm")
+          ApplyBallSocketConstraint(j, 2.617993878f); // 150 degree
+
+        // apply ball-and-socket constraint to hand joint
+        if (world.name == "LeftHand")
+          ApplyBallSocketConstraint(j, 1.5707963268f); // 90 degree
+      }
 
       // apply transformation hierarchically through the IK chain
       ApplyTransformHierarchically(j, world.worldRotation.toMat4());
@@ -123,15 +128,15 @@ bool CCDSolver::Solve(glm::vec3& worldLocationGoal)
       // update Pc after applying transformation
       Pc = getWorldTransform(last).worldPosition;
 
-      if (glm::length(Pd - Pc) < threshHold)
+      if (glm::length(Pd - Pc) < threshHold + std::numeric_limits<float>::epsilon())
       {
         return true;
       }
     }
-    if (counter > 200)
+    if (counter > numSteps)
       break;
     ++counter;
-  } while (glm::length(Pc - Pv) > threshHold);
+  } while (glm::length(Pc - Pv) > threshHold + std::numeric_limits<float>::epsilon());
 
   return true;
 }

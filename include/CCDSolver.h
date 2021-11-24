@@ -40,6 +40,7 @@ public:
   void ApplyHingeConstraint(int index, glm::vec3 axis);
   void ApplyBallSocketConstraint(int index, float limit);
 
+  bool applyConstraint;
 private:
   std::vector<IKData> IKChain;
   std::vector<std::vector<IKData>> intermediatePosition;

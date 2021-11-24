@@ -238,11 +238,18 @@ void InverseKinematicManager::StartIK()
 
 void InverseKinematicManager::CCDSolver()
 {
+  // convert goal into correct space before using ccd solver
   glm::vec3 goal = Goal->GetPosition();
   glm::mat4 toLocalSpace = glm::inverse(IKChainModelMatrix);
   glm::vec3 goalLocalSpace = glm::vec3(toLocalSpace * glm::vec4(goal, 1.f));
+
+  // clear buffer before going to the next solving iteration
+  m_CCDSolver.getIntermediatePosition().clear();
+
+  // ccd solver
   m_CCDSolver.Solve(goalLocalSpace);
 
+  // update flag is used for animate the IK chain
   updateFlag = true;
 
   //auto* am = Engine::managers_.GetManager<AnimationManager*>();
@@ -288,7 +295,7 @@ void InverseKinematicManager::AnimateIK()
 {
   auto& intermediatePosition = m_CCDSolver.getIntermediatePosition();
 
-  for (int i = 0; i < m_CCDSolver.getChain().size(); ++i)
+  for (int i = 1; i < m_CCDSolver.getChain().size(); ++i)
   {
     IKChainPosition[i] = glm::mix(IKChainPosition[i], intermediatePosition[keyFrame][i].worldPosition, step);
   }

@@ -239,6 +239,8 @@ void ImGuiUIManager::Update()
 
     ImGui::Checkbox("IK Chain Draw", &rm->IKChainDraw);
 
+    ImGui::Checkbox("Apply Constraint", &ikm->m_CCDSolver.applyConstraint);
+
     if (am->PlayAnimation)
     {
       ImGui::Text("Sliding & Skidding Control");
