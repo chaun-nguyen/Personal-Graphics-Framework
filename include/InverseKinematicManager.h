@@ -57,6 +57,7 @@ private:
   unsigned keyFrame;
   unsigned jointIndex;
 
-  void ApplyTransformationHierarchy(const NodeData* node, glm::mat4 parentTransform);
-  bool isInsideIKChain(const std::string& name);
+  void ApplyTransformationHierarchy(const NodeData* node,
+    std::vector<glm::mat4>& preOffSetMatrices, glm::mat4 parentTransform, bool enterIKChain);
+  bool isInsideIKChain(const std::string& name, int& index);
 };
