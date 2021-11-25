@@ -254,7 +254,7 @@ void InverseKinematicManager::CCDSolver()
   m_CCDSolver.Solve(goalLocalSpace);
 
   // update flag is used for animate the IK chain
-  //updateFlag = true;
+  updateFlag = true;
 
   auto* am = Engine::managers_.GetManager<AnimationManager*>();
   auto& boneInfoMap = am->animation->GetBoneIDMap();
@@ -266,25 +266,26 @@ void InverseKinematicManager::CCDSolver()
   glm::mat4 identity = glm::mat4(1.0f);
   ApplyTransformationHierarchy(&am->animation->GetRootNode(), 
     intermediateValue,
-    5,
+    0,
+    0.f,
     offsetMatrices, identity, false);
 
-  for (int i = 0; i < ikChain.size(); ++i)
-  {
-    // update transformation matrix for bones that are inside IK chain
-    // calculate the final position of bones inside IK chain after running ccd
-    IKChainPosition[i] = glm::vec3(
-      offsetMatrices[boneInfoMap[ikChain[i].name].id] *
-      glm::vec4(ikChain[i].localPosition, 1.f));
-  }
-
-  // update IK Chain (for drawing purpose)
-  CHECKERROR;
-  glInvalidateBufferData(IKChainVBO);
-  CHECKERROR;
-  glNamedBufferSubData(IKChainVBO, 0, IKChainPosition.size() * sizeof(glm::vec3),
-    IKChainPosition.data());
-  CHECKERROR;
+  //for (int i = 0; i < ikChain.size(); ++i)
+  //{
+  //  // update transformation matrix for bones that are inside IK chain
+  //  // calculate the final position of bones inside IK chain after running ccd
+  //  IKChainPosition[i] = glm::vec3(
+  //    offsetMatrices[boneInfoMap[ikChain[i].name].id] *
+  //    glm::vec4(ikChain[i].localPosition, 1.f));
+  //}
+  //
+  //// update IK Chain (for drawing purpose)
+  //CHECKERROR;
+  //glInvalidateBufferData(IKChainVBO);
+  //CHECKERROR;
+  //glNamedBufferSubData(IKChainVBO, 0, IKChainPosition.size() * sizeof(glm::vec3),
+  //  IKChainPosition.data());
+  //CHECKERROR;
 
   // update all bones (for drawing purpose)
   unsigned size = am->animation->bonePosition.size();
@@ -340,6 +341,7 @@ void InverseKinematicManager::AnimateIK()
 void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
   std::vector<std::vector<IKData>>& intermediateValue,
   unsigned keyFrame,
+  float step,
   std::vector<glm::mat4>& preOffSetMatrices,
   glm::mat4 parentTransform,
   bool enterIKChain)
@@ -359,12 +361,14 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
     // if bone are inside IK chain
     if (isInsideIKChain(nodeName, IKindex))
     {
+      auto& ikChain = m_CCDSolver.getChain();
       // concatenate to get final matrix for each joint hierarchically
       preOffSetMatrices[boneInfoMap[nodeName].id] =
-        intermediateValue[keyFrame][IKindex].Transformation * preOffSetMatrices[boneInfoMap[nodeName].id];
+        ikChain[IKindex].Transformation * preOffSetMatrices[boneInfoMap[nodeName].id];
 
       // pass down update parent transform
-      parentTransform = intermediateValue[keyFrame][IKindex].Transformation;
+      //parentTransform = intermediateValue[keyFrame][IKindex].Transformation;
+      parentTransform = ikChain[IKindex].Transformation;
 
       // turn on flag to update children that has parent inside IK chain
       enterIKChain = true;
@@ -388,6 +392,7 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
     ApplyTransformationHierarchy(&node->children[i],
       intermediateValue,
       keyFrame,
+      step,
       preOffSetMatrices, parentTransform, enterIKChain);
   }
 }

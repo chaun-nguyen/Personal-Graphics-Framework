@@ -6,7 +6,7 @@
 
 CCDSolver::CCDSolver()
 {
-  numSteps = 200;
+  numSteps = 5;
   threshHold = 0.00001f;
   applyConstraint = true;
 }
