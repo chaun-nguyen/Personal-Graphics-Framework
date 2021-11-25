@@ -25,7 +25,7 @@ public:
   void AddBoneToChain(IKData newBone);
   std::vector<IKData>& getChain();
 
-  std::vector<std::vector<IKData>>& getIntermediatePosition();
+  std::vector<std::vector<IKData>>& getIntermediateValue();
 
   unsigned getNumSteps();
   void setNumSteps(unsigned newNumSteps);
@@ -43,7 +43,7 @@ public:
   bool applyConstraint;
 private:
   std::vector<IKData> IKChain;
-  std::vector<std::vector<IKData>> intermediatePosition;
+  std::vector<std::vector<IKData>> intermediateValue;
   unsigned numSteps;
   float threshHold;
   glm::vec3 Pd;

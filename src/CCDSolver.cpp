@@ -42,9 +42,9 @@ std::vector<IKData>& CCDSolver::getChain()
   return IKChain;
 }
 
-std::vector<std::vector<IKData>>& CCDSolver::getIntermediatePosition()
+std::vector<std::vector<IKData>>& CCDSolver::getIntermediateValue()
 {
-  return intermediatePosition;
+  return intermediateValue;
 }
 
 unsigned CCDSolver::getNumSteps()
@@ -154,7 +154,7 @@ void CCDSolver::ApplyTransformHierarchically(int startIndex, glm::mat4 M)
     IKChain[i].worldPosition = glm::vec3(transformation * glm::vec4(IKChain[i].worldPosition, 1.f));
   }
 
-  intermediatePosition.push_back(IKChain);
+  intermediateValue.push_back(IKChain);
 }
 
 void CCDSolver::ApplyHingeConstraint(int index, glm::vec3 axis)
