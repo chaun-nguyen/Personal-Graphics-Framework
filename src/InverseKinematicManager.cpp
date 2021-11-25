@@ -273,6 +273,7 @@ void InverseKinematicManager::AnimateIK()
     step,
     offsetMatrices, identity, false);
 
+  // IK Chain joints
   for (int i = 0; i < ikChain.size(); ++i)
   {
     // get next pose
@@ -292,6 +293,7 @@ void InverseKinematicManager::AnimateIK()
     IKChainPosition.data());
   CHECKERROR;
 
+  // ALL BONES
   // update all bones (for drawing purpose)
   unsigned size = am->animation->bonePosition.size();
   for (int i = 0; i < size; ++i)
@@ -340,6 +342,7 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
   std::string nodeName = node->name; // get name of current bone
   auto* am = Engine::managers_.GetManager<AnimationManager*>(); // get animation handle
   auto& boneInfoMap = am->animation->GetBoneIDMap(); // get bone info map
+  auto& finalMatrices = am->animator->GetFinalBoneMatrices();
 
   // get correct bone
   Bone* Bone = am->animation->FindBone(nodeName);
@@ -357,6 +360,9 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
         intermediateValue[keyFrame][IKindex].Transformation * preOffSetMatrices[boneInfoMap[nodeName].id];
         //ikChain[IKindex].Transformation * preOffSetMatrices[boneInfoMap[nodeName].id];
 
+      // mesh skinning but need to adjust vertex weights otherwise arm will be squished
+      finalMatrices[boneInfoMap[nodeName].id] = preOffSetMatrices[boneInfoMap[nodeName].id] * boneInfoMap[nodeName].offset;
+
       // pass down update parent transform
       parentTransform = intermediateValue[keyFrame][IKindex].Transformation;
       //parentTransform = ikChain[IKindex].Transformation;
@@ -373,6 +379,9 @@ void InverseKinematicManager::ApplyTransformationHierarchy(const NodeData* node,
         preOffSetMatrices[boneInfoMap[nodeName].id] =
           parentTransform *
           preOffSetMatrices[boneInfoMap[nodeName].id];
+
+        // mesh skinning but need to adjust vertex weights otherwise arm will be squished
+        finalMatrices[boneInfoMap[nodeName].id] = preOffSetMatrices[boneInfoMap[nodeName].id] * boneInfoMap[nodeName].offset;
       }
     }
   }

@@ -14,7 +14,7 @@ public:
   void UpdateAnimation(float dt);
   void PlayAnimation(SkeletalAnimation* pAnimation);
 
-  std::vector<glm::mat4> GetFinalBoneMatrices();
+  std::vector<glm::mat4>& GetFinalBoneMatrices();
   std::vector<glm::mat4> GetPreOffSetMatrices();
 
   float speed = 1.f;

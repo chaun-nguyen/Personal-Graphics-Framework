@@ -67,7 +67,7 @@ void Animator::PlayAnimation(SkeletalAnimation* pAnimation)
   m_CurrentTime = 0.0f;
 }
 
-std::vector<glm::mat4> Animator::GetFinalBoneMatrices()
+std::vector<glm::mat4>& Animator::GetFinalBoneMatrices()
 {
   return m_FinalBoneMatrices;
 }
