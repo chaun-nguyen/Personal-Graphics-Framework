@@ -8,6 +8,7 @@ InputManager,
 CameraManager,
 DeserializeManager,
 ObjectManager,
+PhysicsManager,
 AnimationManager,
 SplineManager,
 InverseKinematicManager,
@@ -27,6 +28,8 @@ Engine::Engine()
   managers_.GetManager<DeserializeManager*>()->Setup();
 
   managers_.GetManager<ObjectManager*>()->Setup();
+
+  managers_.GetManager<PhysicsManager*>()->Setup();
 
   managers_.GetManager<AnimationManager*>()->Setup();
 
@@ -62,6 +65,8 @@ void Engine::Step()
   managers_.GetManager<DeserializeManager*>()->Update();
 
   managers_.GetManager<ObjectManager*>()->Update();
+
+  managers_.GetManager<PhysicsManager*>()->Update();
 
   managers_.GetManager<AnimationManager*>()->Update();
 

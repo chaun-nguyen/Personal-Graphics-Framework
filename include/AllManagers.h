@@ -10,6 +10,7 @@
 #include "CameraManager.h"
 #include "DeserializeManager.h"
 #include "ObjectManager.h"
+#include "PhysicsManager.h"
 #include "AnimationManager.h"
 #include "SplineManager.h"
 #include "InverseKinematicManager.h"
@@ -26,6 +27,7 @@ enum class ManagerOrder
   CameraManager,
   DeserializeManager,
   ObjectManager,
+  PhysicsManager,
   AnimationManager,
   SplineManager,
   InverseKinematicManager,

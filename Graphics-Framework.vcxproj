@@ -53,6 +53,8 @@
     <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\ObjectManager.cpp" />
     <ClCompile Include="src\Octree.cpp" />
+    <ClCompile Include="src\Physics.cpp" />
+    <ClCompile Include="src\PhysicsManager.cpp" />
     <ClCompile Include="src\Plane.cpp" />
     <ClCompile Include="src\Quaternion.cpp" />
     <ClCompile Include="src\RenderManager.cpp" />
@@ -105,6 +107,8 @@
     <ClInclude Include="include\Object.h" />
     <ClInclude Include="include\ObjectManager.h" />
     <ClInclude Include="include\Octree.h" />
+    <ClInclude Include="include\Physics.h" />
+    <ClInclude Include="include\PhysicsManager.h" />
     <ClInclude Include="include\Plane.h" />
     <ClInclude Include="include\Quaternion.h" />
     <ClInclude Include="include\RenderManager.h" />

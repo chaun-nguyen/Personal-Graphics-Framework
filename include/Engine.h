@@ -18,6 +18,7 @@ public:
   CameraManager,
   DeserializeManager,
   ObjectManager,
+  PhysicsManager,
   AnimationManager,
   SplineManager,
   InverseKinematicManager,
