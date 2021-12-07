@@ -65,18 +65,22 @@ void PhysicsManager::Movement()
   case GLFW_KEY_1:
     leftAnchorPointPos.y -= dist;
     om->SpringMassDamperGeometry_.front()->SetPosition(leftAnchorPointPos);
+    qB_.front() = leftAnchorPointPos;
     break;
   case GLFW_KEY_2:
     leftAnchorPointPos.y += dist;
     om->SpringMassDamperGeometry_.front()->SetPosition(leftAnchorPointPos);
+    qB_.front() = leftAnchorPointPos;
     break;
   case GLFW_KEY_0:
     rightAnchorPointPos.y += dist;
     om->SpringMassDamperGeometry_.back()->SetPosition(rightAnchorPointPos);
+    qA_.back() = rightAnchorPointPos;
     break;
   case GLFW_KEY_9:
     rightAnchorPointPos.y -= dist;
     om->SpringMassDamperGeometry_.back()->SetPosition(rightAnchorPointPos);
+    qA_.back() = rightAnchorPointPos;
     break;
   }
 }

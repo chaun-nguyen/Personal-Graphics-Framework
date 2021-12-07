@@ -62,7 +62,7 @@ private:
   {
     // spring coefficient
     //40.f, 50.f, 45.f, 65.f, 70.f, 35.f
-    50.f, 50.f, 50.f, 50.f, 50.f, 50.f
+    10.f, 10.f, 10.f, 10.f, 10.f, 10.f
   };
   std::vector<float> d
   {
