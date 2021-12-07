@@ -77,7 +77,10 @@ public:
   std::vector<glm::vec3> total_model_vertices_; // for calculating bounding volume
   std::vector<unsigned int> total_model_indices_; // for calculating bounding volume
   std::vector<Object*> container_;
+
+  std::vector<Object*> SpringMassDamperGeometry_;
 private:
+  void CreateSpringMassDamperSystem();
   std::vector<Object*> models_;
   std::vector<BoundingVolume*> bvs_gjk_;
 };

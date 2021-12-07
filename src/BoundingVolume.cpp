@@ -109,8 +109,8 @@ void BV_AABB::Update()
     glm::vec3 pos = bv_object->GetPosition();
     // world space scale * object space scale
     glm::vec3 scale = bv_object->GetScale();
-    float rotation = bv_object->GetAngle();
-    glm::mat4 R = Rotate(1, rotation);
+    Quaternion orientation = bv_object->GetOrientation();
+    glm::mat4 R = orientation.toMat4();
 
     center_ = glm::vec3(Translate(pos.x, pos.y, pos.z) * R * Scale(scale.x, scale.y, scale.z) * center);
 

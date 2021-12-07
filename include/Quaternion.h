@@ -85,4 +85,6 @@ namespace QUATERNION
 
   // build a quaternion from an angle and an axis
   Quaternion angleAxis(float angle, glm::vec3& v);
+
+  Quaternion fromMat3(glm::mat3& m);
 }

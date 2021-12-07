@@ -17,6 +17,7 @@ static bool model_window = true;
 static bool gjk_window = true;
 static bool animation_window = true;
 static bool path_window = true;
+static bool physic_window = true;
 
 // utility structure for realtime plot
 struct ScrollingBuffer {
@@ -222,6 +223,19 @@ void ImGuiUIManager::Update()
     Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
 
   ImGui::End();
+#pragma endregion
+#pragma region PHYSICS_WINDOW
+  if (physic_window)
+  {
+    ImGui::Begin("Spring-damper Settings", &physic_window);
+
+    ImGui::Checkbox("Start", &Engine::managers_.GetManager<PhysicsManager*>()->simulateFlag);
+
+    // enable glfw input
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+      Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
+    ImGui::End();
+  }
 #pragma endregion
 #pragma region ANIMATION_WINDOW
   if (animation_window)

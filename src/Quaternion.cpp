@@ -201,6 +201,18 @@ Quaternion QUATERNION::angleAxis(float angle, glm::vec3& v)
   return result;
 }
 
+Quaternion QUATERNION::fromMat3(glm::mat3& m)
+{
+  Quaternion q;
+
+  q._s = 0.5f * glm::sqrt(m[0][0] + m[1][1] + m[2][2] + 1);
+  q._v.x = (m[1][2] - m[2][1]) / (4.f * q._s);
+  q._v.y = (m[2][0] - m[0][2]) / (4.f * q._s);
+  q._v.z = (m[0][1] - m[1][0]) / (4.f * q._s);
+
+  return q;
+}
+
 Quaternion Interpolation::lerp(Quaternion q1, Quaternion q2, float t)
 {
   return q1* (1.f - t) + q2 * t;

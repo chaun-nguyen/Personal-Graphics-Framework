@@ -42,9 +42,9 @@ void Object::SetPosition(glm::vec3 pos)
   dirtyFlag = true;
 }
 
-void Object::SetRotation(float theta)
+void Object::SetRotation(Quaternion q)
 {
-  angle = theta;
+  orientation = q;
   dirtyFlag = true;
 }
 
@@ -64,9 +64,9 @@ glm::vec3& Object::GetScale()
   return scale;
 }
 
-float& Object::GetAngle()
+Quaternion Object::GetOrientation()
 {
-  return angle;
+  return orientation;
 }
 
 bool& Object::GetDirtyFlag()
@@ -78,7 +78,7 @@ void Object::BuildModelMatrix()
 {
   if (dirtyFlag)
   {
-    modelTr = Translate(position.x, position.y, position.z) * Rotate(1, angle) * Scale(scale.x, scale.y, scale.z);
+    modelTr = Translate(position.x, position.y, position.z) * orientation.toMat4() * Scale(scale.x, scale.y, scale.z);
     dirtyFlag = false;
   }
 }

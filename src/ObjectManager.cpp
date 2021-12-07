@@ -10,11 +10,22 @@
 #include "Octree.h"
 #include "BspTree.h"
 #include "GJK.h"
-
+#include "Physics.h"
 #include <iostream>
 
 ObjectManager::~ObjectManager()
 {
+  for (auto& p : SpringMassDamperGeometry_)
+  {
+    if (p->shape)
+      delete p->shape;
+    if (p->diffuseTex)
+      delete p->diffuseTex;
+    if (p->normalTex)
+      delete p->normalTex;
+    delete p;
+  }
+
   for (auto& obj : container_)
   {
     if (obj->shape)
@@ -38,22 +49,139 @@ ObjectManager::~ObjectManager()
   }
 }
 
+void ObjectManager::CreateSpringMassDamperSystem()
+{
+  // Create Spring Mass Damper System
+  //std::vector<glm::vec3> cubeVertices
+  //{
+  //  {1.f,1.f,1.f},
+  //  {-1.f,1.f,1.f},
+  //  {-1.f,-1.f,1.f},
+  //  {1.f,-1.f,1.f},
+  //  {1.f,1.f,-1.f},
+  //  {-1.f,1.f,-1.f},
+  //  {-1.f,-1.f,-1.f},
+  //  {1.f,-1.f,-1.f}
+  //};
+
+  Shape* anchorPolygonA = new Sphere(2);
+  Object* anchorPointsA = new Object(anchorPolygonA,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  anchorPointsA->tiling = 1.f;
+  anchorPointsA->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
+  anchorPointsA->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
+  anchorPointsA->SetPosition({ -3000.0f,500.0f,0.0f });
+  //anchorPointsA->SetRotation(0.f);
+  anchorPointsA->SetScale({ 100.f,100.f,100.f });
+  anchorPointsA->BuildModelMatrix();
+
+  SpringMassDamperGeometry_.push_back(anchorPointsA);
+
+  Shape* stickShape1 = new Box();
+  Object* stick1 = new Object(stickShape1,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick1->tiling = 1.f;
+  stick1->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick1->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick1->SetPosition({ -2000.0f,500.0f,0.0f });
+  //stick1->SetRotation(0.f);
+  stick1->SetScale({ 200.f,50.f,50.f });
+  stick1->BuildModelMatrix();
+
+  // populate physics component
+  stick1->physics = new Physics();
+  stick1->physics->Setup(stick1, stickShape1, 1.f / stickShape1->Pnt.size());
+
+  SpringMassDamperGeometry_.push_back(stick1);
+
+  Shape* stickShape2 = new Box();
+  Object* stick2 = new Object(stickShape2,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick2->tiling = 1.f;
+  stick2->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick2->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick2->SetPosition({ -1000.0f,500.0f,0.0f });
+  //stick2->SetRotation(0.f);
+  stick2->SetScale({ 200.f,50.f,50.f });
+  stick2->BuildModelMatrix();
+
+  // populate physics component
+  stick2->physics = new Physics();
+  stick2->physics->Setup(stick2, stickShape2, 1.f / stickShape2->Pnt.size());
+
+  SpringMassDamperGeometry_.push_back(stick2);
+
+  Shape* stickShape3 = new Box();
+  Object* stick3 = new Object(stickShape3,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick3->tiling = 1.f;
+  stick3->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick3->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick3->SetPosition({ 0.0f,500.0f,0.0f });
+  //stick3->SetRotation(0.f);
+  stick3->SetScale({ 200.f,50.f,50.f });
+  stick3->BuildModelMatrix();
+
+  // populate physics component
+  stick3->physics = new Physics();
+  stick3->physics->Setup(stick3, stickShape3, 1.f / stickShape3->Pnt.size());
+
+  SpringMassDamperGeometry_.push_back(stick3);
+
+  Shape* stickShape4 = new Box();
+  Object* stick4 = new Object(stickShape4,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick4->tiling = 1.f;
+  stick4->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick4->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick4->SetPosition({ 1000.0f,500.0f,0.0f });
+  //stick4->SetRotation(0.f);
+  stick4->SetScale({ 200.f,50.f,50.f });
+  stick4->BuildModelMatrix();
+
+  // populate physics component
+  stick4->physics = new Physics();
+  stick4->physics->Setup(stick4, stickShape4, 1.f / stickShape4->Pnt.size());
+
+  SpringMassDamperGeometry_.push_back(stick4);
+
+  Shape* stickShape5 = new Box();
+  Object* stick5 = new Object(stickShape5,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick5->tiling = 1.f;
+  stick5->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick5->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick5->SetPosition({ 2000.0f,500.0f,0.0f });
+  //stick5->SetRotation(0.f);
+  stick5->SetScale({ 200.f,50.f,50.f });
+  stick5->BuildModelMatrix();
+
+  // populate physics component
+  stick5->physics = new Physics();
+  stick5->physics->Setup(stick5, stickShape5, 1.f / stickShape5->Pnt.size());
+
+  SpringMassDamperGeometry_.push_back(stick5);
+
+  Shape* anchorPolygonB = new Sphere(2);
+  Object* anchorPointsB = new Object(anchorPolygonB,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  anchorPointsB->tiling = 1.f;
+  anchorPointsB->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
+  anchorPointsB->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
+  anchorPointsB->SetPosition({ 3000.0f,500.0f,0.0f });
+  //anchorPointsB->SetRotation(0.f);
+  anchorPointsB->SetScale({ 100.f,100.f,100.f });
+  anchorPointsB->BuildModelMatrix();
+
+  SpringMassDamperGeometry_.push_back(anchorPointsB);
+}
+
+
 void ObjectManager::Setup()
 {
-  //
-  //Shape* boxPolygon2 = new Box();
-  //Object* box2 = new Object(boxPolygon2,
-  //  boxPolygon2->diffuseColor + glm::vec3(1,0.04,0.2), boxPolygon2->specularColor, boxPolygon2->shininess);
-  //
-  //box2->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
-  //box2->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
-  //box2->SetPosition({ 10.0f,5.0f,-5.0f });
-  //box2->SetRotation(0.f);
-  //box2->SetScale({ 2.f,2.f,2.f });
-  //box2->BuildModelMatrix();
-  //
-  //Add(box2);
-  //
+  CreateSpringMassDamperSystem();
+
+  // GJK object
   Shape* spherePolygon = new Sphere(32);
   Object* sphere = new Object(spherePolygon,
     spherePolygon->diffuseColor / 2.0f, spherePolygon->specularColor, spherePolygon->shininess);
@@ -61,7 +189,7 @@ void ObjectManager::Setup()
   sphere->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
   sphere->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
   sphere->SetPosition({ 0.0f,2500.0f,0.0f });
-  sphere->SetRotation(0.f);
+  //sphere->SetRotation(0.f);
   sphere->SetScale({ 25.f,25.f,25.f });
   sphere->BuildModelMatrix();
   
@@ -76,6 +204,7 @@ void ObjectManager::Setup()
   sphere->bv = bv;
   AddBoundingVolumeGJK(bv);
 
+  // Inverse Kinematic
   // end effector for inverse kinematic
   Shape* boxPolygon = new Box();
   Object* box = new Object(boxPolygon,
@@ -85,12 +214,12 @@ void ObjectManager::Setup()
   box->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
   box->tiling = 1.f;
   box->SetPosition({ 500.0f,800.0f,500.0f });
-  box->SetRotation(0.f);
+  //box->SetRotation(0.f);
   box->SetScale({ 100.f,100.f,100.f });
   box->BuildModelMatrix();
   box->isWireFrame = true;
 
-  Add(box);
+  //Add(box);
   Engine::managers_.GetManager<InverseKinematicManager*>()->Goal = box;
 
   // plane
@@ -101,7 +230,7 @@ void ObjectManager::Setup()
   plane->diffuseTex = new TextureLoader("./textures/6670-diffuse.jpg");
   plane->normalTex = new TextureLoader("./textures/6670-normal.jpg");
   plane->SetPosition({ 0.0f, 0.0f, 0.0f });
-  plane->SetRotation(0.f);
+  //plane->SetRotation(0.f);
   plane->SetScale({ 2.f,2.f,2.f });
   plane->BuildModelMatrix();
 
@@ -118,7 +247,7 @@ void ObjectManager::Setup()
     { 1.0f,1.0f,1.0f }, lightPolygon->specularColor, lightPolygon->shininess);
 
   sun->SetPosition({ 3000.0f,3500.0f,100.0f });
-  sun->SetRotation(0.f);
+  //sun->SetRotation(0.f);
   sun->SetScale({ 1.f,1.f,1.f });
   sun->BuildModelMatrix();
 
@@ -128,26 +257,17 @@ void ObjectManager::Setup()
   gjkController.simplex = new Simplex();
 
   renderModel = false;
-
-  //Object* backpackObj = new Object("./model/backpack/backpack.obj", true);
-  //backpackObj->SetPosition({ 0.f,15.f,0.f });
-  //backpackObj->SetRotation(0.f);
-  //backpackObj->SetScale({ 2.f,2.f,2.f });
-  //backpackObj->BuildModelMatrix();
-  //
-  //AddModel(backpackObj);
-
-  //Object* xyzrgb_dragon = new Object("./model/xyzrgb_dragon/xyzrgb_dragon.obj", true);
-  //xyzrgb_dragon->SetPosition({ 0.f,5.f,0.f });
-  //xyzrgb_dragon->SetRotation(-90.f);
-  //xyzrgb_dragon->SetScale({ 0.125f,0.125f,0.125f });
-  //xyzrgb_dragon->BuildModelMatrix();
-  //
-  //AddModel(xyzrgb_dragon);
 }
 
 void ObjectManager::Update()
 {
+  // update final transform for spring mass damper system
+  for (auto& p : SpringMassDamperGeometry_)
+  {
+    if (p)
+      p->BuildModelMatrix();
+  }
+
   // update procedural shape (cube, sphere, plane)
   for (auto& obj : container_)
   {
@@ -276,6 +396,44 @@ void ObjectManager::AddBoundingVolumeGJK(BoundingVolume* bv)
 
 void ObjectManager::Draw(ShaderProgram* shaderProgram)
 {
+  for (auto& obj : SpringMassDamperGeometry_)
+  {
+    if (obj)
+    {
+      int loc = glGetUniformLocation(shaderProgram->programID, "ModelTr");
+      glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(obj->modelTr));
+
+      loc = glGetUniformLocation(shaderProgram->programID, "NormalTr");
+      glm::mat4 normalTr = glm::transpose(glm::inverse(obj->modelTr));
+      glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(normalTr));
+
+      loc = glGetUniformLocation(shaderProgram->programID, "isModel");
+      glUniform1i(loc, 0);
+
+      loc = glGetUniformLocation(shaderProgram->programID, "isTextureSupported");
+      glUniform1i(loc, obj->isTextureSupported);
+
+      loc = glGetUniformLocation(shaderProgram->programID, "tiling");
+      glUniform1f(loc, obj->tiling);
+
+      if (obj->isTextureSupported)
+      {
+        obj->diffuseTex->Bind(9, shaderProgram->programID, "texture_diffuse1");
+        obj->diffuseTex->Unbind();
+
+        obj->normalTex->Bind(10, shaderProgram->programID, "texture_normal1");
+        obj->normalTex->Unbind();
+      }
+      else
+      {
+        loc = glGetUniformLocation(shaderProgram->programID, "diffuseColor");
+        glUniform3fv(loc, 1, glm::value_ptr(obj->diffuseColor));
+      }
+
+      obj->Draw();
+    }
+  }
+
   for (auto& obj : container_)
   {
     if (obj)
@@ -478,7 +636,7 @@ void ObjectManager::SectionLoader(const char* path)
     // load model
     Object* testObj = new Object(p.c_str(), true);
     testObj->SetPosition({ 0.f,0.f,0.f });
-    testObj->SetRotation(0.f);
+    //testObj->SetRotation(0.f);
     testObj->SetScale({ 5.f,5.f,5.f });
     testObj->BuildModelMatrix();
 

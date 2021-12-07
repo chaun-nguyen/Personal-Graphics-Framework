@@ -1,11 +1,13 @@
 #pragma once
 #include "LibHeader.h"
 #include <string>
+#include "Quaternion.h"
 
 class BoundingVolume;
 class Model;
 class TextureLoader;
 class Shape;
+class Physics;
 
 class Object
 {
@@ -21,12 +23,12 @@ public:
   void Draw();
 
   void SetPosition(glm::vec3 pos);
-  void SetRotation(float theta);
+  void SetRotation(Quaternion q);
   void SetScale(glm::vec3 s);
 
   glm::vec3& GetPosition();
   glm::vec3& GetScale();
-  float& GetAngle();
+  Quaternion GetOrientation();
   bool& GetDirtyFlag();
 
   void BuildModelMatrix();
@@ -50,9 +52,11 @@ public:
   float tiling = 10.f;
 
   bool isWireFrame = false;
+
+  Physics* physics = nullptr;
 private:
   glm::vec3 position;
   glm::vec3 scale;
-  float angle;
+  Quaternion orientation; // identity quaternion
   bool dirtyFlag = false;
 };
