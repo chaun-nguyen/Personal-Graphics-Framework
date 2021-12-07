@@ -21,7 +21,10 @@ public:
   void Update() override;
 
   bool simulateFlag = false;
+  int key;
 private:
+  void Movement();
+
   void ComputeExternalForce(int i);
   void DynamicSimulation(float dt);
 

@@ -43,9 +43,42 @@ void PhysicsManager::Setup()
 
 void PhysicsManager::Update()
 {
+  if (key == GLFW_KEY_0 || key == GLFW_KEY_9 || key == GLFW_KEY_1 || key == GLFW_KEY_2)
+  {
+    Movement();
+  }
   double dt = Engine::managers_.GetManager<FrameRateManager*>()->delta_time;
   if (simulateFlag)
     DynamicSimulation(static_cast<float>(1.f / 60.f));
+}
+
+void PhysicsManager::Movement()
+{
+  auto* om = Engine::managers_.GetManager<ObjectManager*>();
+  auto* fr = Engine::managers_.GetManager<FrameRateManager*>();
+  float dist = 3000.f * static_cast<float>(fr->delta_time);
+  glm::vec3 leftAnchorPointPos = om->SpringMassDamperGeometry_.front()->GetPosition();
+  glm::vec3 rightAnchorPointPos = om->SpringMassDamperGeometry_.back()->GetPosition();
+
+  switch (key)
+  {
+  case GLFW_KEY_1:
+    leftAnchorPointPos.y -= dist;
+    om->SpringMassDamperGeometry_.front()->SetPosition(leftAnchorPointPos);
+    break;
+  case GLFW_KEY_2:
+    leftAnchorPointPos.y += dist;
+    om->SpringMassDamperGeometry_.front()->SetPosition(leftAnchorPointPos);
+    break;
+  case GLFW_KEY_0:
+    rightAnchorPointPos.y += dist;
+    om->SpringMassDamperGeometry_.back()->SetPosition(rightAnchorPointPos);
+    break;
+  case GLFW_KEY_9:
+    rightAnchorPointPos.y -= dist;
+    om->SpringMassDamperGeometry_.back()->SetPosition(rightAnchorPointPos);
+    break;
+  }
 }
 
 void PhysicsManager::ComputeExternalForce(int i)

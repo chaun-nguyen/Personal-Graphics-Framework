@@ -71,6 +71,7 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
 
     auto* cm = Engine::managers_.GetManager<CameraManager*>();
     auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
+    auto* pm = Engine::managers_.GetManager<PhysicsManager*>();
 
     if (action == GLFW_PRESS)
     {
@@ -94,6 +95,13 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
       case GLFW_KEY_LEFT:
         ikm->key = key;
         break;
+        // move anchor point
+      case GLFW_KEY_0:
+      case GLFW_KEY_9:
+      case GLFW_KEY_1:
+      case GLFW_KEY_2:
+        pm->key = key;
+        break;
       case GLFW_KEY_ESCAPE:
         exit(EXIT_SUCCESS);
       }
@@ -102,6 +110,7 @@ void InputManager::Keyboard(GLFWwindow* window, int key, int scancode, int actio
     {
       ikm->key = GLFW_KEY_UNKNOWN;
       cm->key = GLFW_KEY_UNKNOWN;
+      pm->key = GLFW_KEY_UNKNOWN;
     }
   }
   else
