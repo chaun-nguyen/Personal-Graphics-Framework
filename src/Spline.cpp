@@ -6,8 +6,19 @@
 #include "Transform.h"
 #include "Shader.h"
 
+Spline::~Spline()
+{
+  glDeleteBuffers(1, &curveVAO);
+  glDeleteBuffers(1, &curveVBO);
+  glDeleteBuffers(1, &curveEBO);
+
+  glDeleteBuffers(1, &controlPointVAO);
+  glDeleteBuffers(1, &controlPointVBO);
+  glDeleteBuffers(1, &controlPointEBO);
+}
+
 Spline::Spline(const std::vector<glm::vec3>& pts) : curveVAO(0), curveVBO(0), curveEBO(0), controlPoints(pts),
-controlPointVAO(0), controlPointVBO(0), controlPointEBO(0)
+                                                    controlPointVAO(0), controlPointVBO(0), controlPointEBO(0)
 {
 }
 

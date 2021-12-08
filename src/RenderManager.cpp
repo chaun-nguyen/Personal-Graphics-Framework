@@ -55,6 +55,11 @@ void RenderManager::Setup()
   IK_Program->AddShader("./shaders/ik.frag", GL_FRAGMENT_SHADER);
   IK_Program->LinkProgram();
 
+  Spring_Program = new ShaderProgram();
+  Spring_Program->AddShader("./shaders/spring.vert", GL_VERTEX_SHADER);
+  Spring_Program->AddShader("./shaders/spring.frag", GL_FRAGMENT_SHADER);
+  Spring_Program->LinkProgram();
+
   clearColor_ = { 0.22f,0.22f,0.22f };
   // create empty vao
   glCreateVertexArrays(1, &emptyVAOid_);
@@ -78,6 +83,7 @@ void RenderManager::Update()
     SplinePass();
   if (IKChainDraw)
     IKChainPass();
+  SpringPass();
   FSQ();
 }
 
@@ -256,6 +262,35 @@ void RenderManager::IKChainPass()
 
   CHECKERROR;
   IK_Program->UnUse();
+  lightFbo_.Unbind();
+}
+
+void RenderManager::SpringPass()
+{
+  glViewport(0, 0, width, height);
+  CHECKERROR;
+  glEnable(GL_DEPTH_TEST);
+  CHECKERROR;
+  lightFbo_.Bind();
+  Spring_Program->Use();
+
+  // depth copy
+  CHECKERROR;
+  glBlitNamedFramebuffer(gbuffer_.GetGBufferID(), lightFbo_.fboID, 0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  CHECKERROR;
+
+  int loc = glGetUniformLocation(Spring_Program->programID, "WorldView");
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldView));
+  CHECKERROR;
+
+  loc = glGetUniformLocation(Spring_Program->programID, "WorldProj");
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(Engine::managers_.GetManager<CameraManager*>()->WorldProj));
+  CHECKERROR;
+
+  Engine::managers_.GetManager<PhysicsManager*>()->Draw(Spring_Program);
+
+  CHECKERROR;
+  Spring_Program->UnUse();
   lightFbo_.Unbind();
 }
 

@@ -10,7 +10,7 @@ class InverseKinematicManager : public ManagerBase<InverseKinematicManager>
 {
 public:
   InverseKinematicManager() = default;
-  ~InverseKinematicManager() override = default;
+  ~InverseKinematicManager() override;
 
   void Setup() override;
   void Update() override;

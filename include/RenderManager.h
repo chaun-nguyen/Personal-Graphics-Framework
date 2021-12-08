@@ -40,6 +40,7 @@ public:
   void BonePass();
   void SplinePass();
   void IKChainPass();
+  void SpringPass();
 
   ShaderProgram* MRT_Program = nullptr;
   ShaderProgram* BRDF_Program = nullptr;
@@ -49,6 +50,7 @@ public:
   ShaderProgram* Bone_Program = nullptr;
   ShaderProgram* Spline_Program = nullptr;
   ShaderProgram* IK_Program = nullptr;
+  ShaderProgram* Spring_Program = nullptr;
 
   int width;
   int height;

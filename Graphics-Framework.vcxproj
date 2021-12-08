@@ -141,6 +141,8 @@
     <None Include="shaders\shadow.vert" />
     <None Include="shaders\spline.frag" />
     <None Include="shaders\spline.vert" />
+    <None Include="shaders\spring.frag" />
+    <None Include="shaders\spring.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

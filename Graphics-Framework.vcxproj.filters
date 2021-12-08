@@ -436,5 +436,11 @@
     <None Include="shaders\ik.frag">
       <Filter>Shader</Filter>
     </None>
+    <None Include="shaders\spring.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shaders\spring.vert">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

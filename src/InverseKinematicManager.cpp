@@ -9,6 +9,13 @@
 #include "Transform.h"
 #include <glm/glm/gtx/matrix_decompose.hpp>
 
+InverseKinematicManager::~InverseKinematicManager()
+{
+  glDeleteBuffers(1, &IKChainVAO);
+  glDeleteBuffers(1, &IKChainVBO);
+  glDeleteBuffers(1, &IKChainEBO);
+}
+
 void InverseKinematicManager::Setup()
 {
   IKChainModelMatrix = Translate(IKChainWorldLocation.x, IKChainWorldLocation.y, IKChainWorldLocation.z) * Scale(5.f, 5.f, 5.f);

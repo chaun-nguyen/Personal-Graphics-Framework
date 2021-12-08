@@ -21,7 +21,7 @@ class SkeletalAnimation
 
 public:
   SkeletalAnimation() = default;
-  ~SkeletalAnimation() = default;
+  ~SkeletalAnimation();
 
   SkeletalAnimation(const std::string& animationPath, Model* model);
 

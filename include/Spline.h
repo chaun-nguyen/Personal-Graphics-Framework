@@ -19,7 +19,7 @@ class Spline
 {
 public:
   Spline() = default;
-  ~Spline() = default;
+  ~Spline();
 
   Spline(const std::vector<glm::vec3>& pts);
 

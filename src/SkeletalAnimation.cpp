@@ -51,6 +51,13 @@ void SkeletalAnimation::ReadHeirarchyData(NodeData& dest, const aiNode* src)
   }
 }
 
+SkeletalAnimation::~SkeletalAnimation()
+{
+  glDeleteBuffers(1, &boneVAO);
+  glDeleteBuffers(1, &boneVBO);
+  glDeleteBuffers(1, &boneEBO);
+}
+
 SkeletalAnimation::SkeletalAnimation(const std::string& animationPath, Model* model)
 {
   Assimp::Importer importer;

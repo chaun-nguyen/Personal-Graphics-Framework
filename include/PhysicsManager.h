@@ -5,6 +5,8 @@
 #include "Quaternion.h"
 #include "ManagerBase.h"
 
+class ShaderProgram;
+
 struct Derivative
 {
   glm::vec3 derivedVelocity = glm::vec3(0.f);
@@ -15,10 +17,12 @@ class PhysicsManager : public ManagerBase<PhysicsManager>
 {
 public:
   PhysicsManager() = default;
-  ~PhysicsManager() override = default;
+  ~PhysicsManager() override;
 
   void Setup() override;
   void Update() override;
+
+  void Draw(ShaderProgram* shader);
 
   bool simulateFlag = false;
   int key;
@@ -52,24 +56,16 @@ private:
   std::vector<glm::vec3> T_;
 
   // total linear momentum
+  std::vector<glm::vec3> pA_;
+  std::vector<glm::vec3> pB_;
   std::vector<glm::vec3> P_;
   // total angular momentum
   std::vector<glm::vec3> L_;
 
   // spring damper system constants for
   // 5 sticks, 6 springs, 2 anchor points
-  std::vector<float> k
-  {
-    // spring coefficient
-    //40.f, 50.f, 45.f, 65.f, 70.f, 35.f
-    10.f, 10.f, 10.f, 10.f, 10.f, 10.f
-  };
-  std::vector<float> d
-  {
-    // damper coefficient (good range from 0.4 to 0.7)
-    //0.4f, 0.7f, 0.55f, 0.65f, 0.45f, 0.5f
-    0.4f, 0.4f, 0.4f, 0.4f, 0.4f, 0.4f
-  };
+  std::vector<float> k;
+  std::vector<float> d;
 
   // spring damper system constants
   float g = 9.8f; // gravity constant
@@ -80,4 +76,15 @@ private:
   void PrecisionCheck(glm::vec3& value);
 
   float epsilon = 0.00001f;
+
+  // draw springs
+  unsigned springVAO;
+  unsigned springVBO;
+  unsigned springEBO;
+  std::vector<glm::vec3> springPosition;
+  std::vector<unsigned int> springIndices;
+
+  void PopulateDrawData();
+  void SetUpVAO();
+  void UpdateVBO();
 };
