@@ -92,7 +92,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
 
   // populate physics component
   stick1->physics = new Physics();
-  stick1->physics->Setup(stick1, stickShape1, 1.f / stickShape1->Pnt.size());
+  stick1->physics->Setup(stick1, stickShape1, 1.f / stickShape1->Pnt.size(), stick1->GetScale());
 
   SpringMassDamperGeometry_.push_back(stick1);
 
@@ -109,7 +109,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
 
   // populate physics component
   stick2->physics = new Physics();
-  stick2->physics->Setup(stick2, stickShape2, 1.f / stickShape2->Pnt.size());
+  stick2->physics->Setup(stick2, stickShape2, 1.f / stickShape2->Pnt.size(), stick2->GetScale());
 
   SpringMassDamperGeometry_.push_back(stick2);
 
@@ -126,7 +126,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
 
   // populate physics component
   stick3->physics = new Physics();
-  stick3->physics->Setup(stick3, stickShape3, 1.f / stickShape3->Pnt.size());
+  stick3->physics->Setup(stick3, stickShape3, 1.f / stickShape3->Pnt.size(), stick3->GetScale());
 
   SpringMassDamperGeometry_.push_back(stick3);
 
@@ -143,7 +143,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
 
   // populate physics component
   stick4->physics = new Physics();
-  stick4->physics->Setup(stick4, stickShape4, 1.f / stickShape4->Pnt.size());
+  stick4->physics->Setup(stick4, stickShape4, 1.f / stickShape4->Pnt.size(), stick4->GetScale());
 
   SpringMassDamperGeometry_.push_back(stick4);
 
@@ -160,7 +160,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
 
   // populate physics component
   stick5->physics = new Physics();
-  stick5->physics->Setup(stick5, stickShape5, 1.f / stickShape5->Pnt.size());
+  stick5->physics->Setup(stick5, stickShape5, 1.f / stickShape5->Pnt.size(), stick5->GetScale());
 
   SpringMassDamperGeometry_.push_back(stick5);
 

@@ -13,10 +13,10 @@ static bool depth_window = true;
 static bool shadowMap_window = false;
 static bool octree_window = true;
 static bool bsp_window = true;
-static bool model_window = true;
+static bool model_window = false;
 static bool gjk_window = true;
-static bool animation_window = true;
-static bool path_window = true;
+static bool animation_window = false;
+static bool path_window = false;
 static bool physic_window = true;
 
 // utility structure for realtime plot
@@ -101,6 +101,13 @@ void ImGuiUIManager::Setup()
   {
     items[i] = dm->SectionPaths[i].c_str();
   }
+
+  springs[0] = "Spring1";
+  springs[1] = "Spring2";
+  springs[2] = "Spring3";
+  springs[3] = "Spring4";
+  springs[4] = "Spring5";
+  springs[5] = "Spring6";
 }
 
 void ImGuiUIManager::Update()
@@ -120,42 +127,42 @@ void ImGuiUIManager::Update()
     ImGui::ShowDemoWindow(&show_demo_window);
 
 #pragma region LOADMODEL_WINDOW
-  ImGui::Begin("Load Model");
-  ImGui::Text("Model Loading Drop Down:");
-
-  static const char* current_items = "NULL";
-  if (ImGui::BeginCombo("##Models", *items))
-  {
-    for (int n = 0; n < IM_ARRAYSIZE(items); ++n)
-    {
-      bool is_selected = (current_items == items[n]);
-      if (ImGui::Selectable(items[n], is_selected))
-      {
-        current_items = items[n];
-        loadedItems.push_back(std::string(current_items));
-        Engine::managers_.GetManager<ObjectManager*>()->SectionLoader(current_items);
-      }
-      if (is_selected)
-      {
-        ImGui::SetItemDefaultFocus();
-      }
-    }
-    ImGui::EndCombo();
-  }
+  //ImGui::Begin("Load Model");
+  //ImGui::Text("Model Loading Drop Down:");
+  //
+  //static const char* current_items = "NULL";
+  //if (ImGui::BeginCombo("##Models", *items))
+  //{
+  //  for (int n = 0; n < IM_ARRAYSIZE(items); ++n)
+  //  {
+  //    bool is_selected = (current_items == items[n]);
+  //    if (ImGui::Selectable(items[n], is_selected))
+  //    {
+  //      current_items = items[n];
+  //      loadedItems.push_back(std::string(current_items));
+  //      Engine::managers_.GetManager<ObjectManager*>()->SectionLoader(current_items);
+  //    }
+  //    if (is_selected)
+  //    {
+  //      ImGui::SetItemDefaultFocus();
+  //    }
+  //  }
+  //  ImGui::EndCombo();
+  //}
   auto* om = Engine::managers_.GetManager<ObjectManager*>();
 
-  ImGui::Text("Selected section:");
-  ImGui::Text(current_items);
-
-  ImGui::Text("Loaded section:");
-  for (auto& s : loadedItems)
-  {
-    ImGui::Text(s.c_str());
-  }
-
-  if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
-    Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
-  ImGui::End();
+  //ImGui::Text("Selected section:");
+  //ImGui::Text(current_items);
+  //
+  //ImGui::Text("Loaded section:");
+  //for (auto& s : loadedItems)
+  //{
+  //  ImGui::Text(s.c_str());
+  //}
+  //
+  //if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+  //  Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
+  //ImGui::End();
 #pragma endregion
 #pragma region SETTING_WINDOW
   // setting window
@@ -224,12 +231,73 @@ void ImGuiUIManager::Update()
 
   ImGui::End();
 #pragma endregion
+
 #pragma region PHYSICS_WINDOW
   if (physic_window)
   {
+    auto* pm = Engine::managers_.GetManager<PhysicsManager*>();
+
     ImGui::Begin("Spring-damper Settings", &physic_window);
 
-    ImGui::Checkbox("Start", &Engine::managers_.GetManager<PhysicsManager*>()->simulateFlag);
+    ImGui::Checkbox("Start Simulation", &Engine::managers_.GetManager<PhysicsManager*>()->simulateFlag);
+
+    glm::vec3 leftAnchorPosition = pm->getLeftAnchorPointPosition();
+    ImGui::DragFloat3("Left Anchor Position", glm::value_ptr(leftAnchorPosition), 100.f, -10000.f, 10000.f, "%.3f");
+    pm->setLeftAnchorPointPosition(leftAnchorPosition);
+
+    glm::vec3 rightAnchorPosition = pm->getRightAnchorPointPosition();
+    ImGui::DragFloat3("Right Anchor Position", glm::value_ptr(rightAnchorPosition), 100.f, -10000.f, 10000.f, "%.3f");
+    pm->setRightAnchorPointPosition(rightAnchorPosition);
+
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Big spring constant will result in less stretching");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Small spring constant will result in more stretching");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Damping constants usage:");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Equal 0 means un-damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Less than 1 means under-damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Equal 1 means critically damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Greater than 1 means over-damped");
+
+    ImGui::Text("Choose which spring to edit:");
+
+    static const char* current_spring = "NULL";
+    static bool chosen = false;
+    static int index = -1;
+    if (ImGui::BeginCombo(current_spring, *springs))
+    {
+      chosen = false;
+      for (int n = 0; n < IM_ARRAYSIZE(springs); ++n)
+      {
+        bool is_selected = (current_spring == springs[n]);
+        if (ImGui::Selectable(springs[n], is_selected))
+        {
+          chosen = true;
+          current_spring = springs[n];
+          std::string str = current_spring;
+          char last = str.back();
+          index = atoi(&last);
+          index -= 1;
+        }
+        if (is_selected)
+        {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+
+    if (chosen)
+    {
+      ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), "Editing");
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), current_spring);
+      float k = pm->getSpringConstants(index);
+      float d = pm->getDampingConstants(index);
+      ImGui::InputFloat("Spring Constant", &k);
+      ImGui::InputFloat("Damping Constant", &d);
+
+      pm->setSpringConstants(index, k);
+      pm->setDampingConstants(index, d);
+    }
 
     // enable glfw input
     if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
@@ -237,6 +305,7 @@ void ImGuiUIManager::Update()
     ImGui::End();
   }
 #pragma endregion
+
 #pragma region ANIMATION_WINDOW
   if (animation_window)
   {

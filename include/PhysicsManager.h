@@ -24,6 +24,18 @@ public:
 
   void Draw(ShaderProgram* shader);
 
+  glm::vec3 getLeftAnchorPointPosition();
+  glm::vec3 getRightAnchorPointPosition();
+
+  void setLeftAnchorPointPosition(glm::vec3 newPos);
+  void setRightAnchorPointPosition(glm::vec3 newPos);
+
+  float getSpringConstants(int index);
+  float getDampingConstants(int index);
+
+  void setSpringConstants(int index, float newK);
+  void setDampingConstants(int index, float newD);
+
   bool simulateFlag = false;
   int key;
 private:
@@ -47,8 +59,17 @@ private:
   void PopulateQA();
 
   // world space location of 2 end points
+  std::vector<glm::vec3> prev_qA_;
+  glm::vec3 curr_qA_;
   std::vector<glm::vec3> qA_;
+
+  std::vector<glm::vec3> prev_qB_;
+  glm::vec3 curr_qB_;
   std::vector<glm::vec3> qB_;
+
+
+  std::vector<glm::vec3> qA_local_;
+  std::vector<glm::vec3> qB_local_;
 
   // velocity of sticks of 2 end points
   std::vector<Derivative> vA_;
@@ -59,23 +80,12 @@ private:
   std::vector<glm::vec3> fB_;
   std::vector<glm::vec3> F_;
 
-  // drag (air friction)
-  std::vector<glm::vec3> fA_drag;
-  std::vector<glm::vec3> fB_drag;
-  std::vector<glm::vec3> F_drag;
-
-  float p; // air density
-  float dragC; // drag coefficient
-  float faceArea; // cross-section area
-
   // total angular force on sticks
   std::vector<glm::vec3> tA_;
   std::vector<glm::vec3> tB_;
   std::vector<glm::vec3> T_;
 
   // total linear momentum
-  std::vector<glm::vec3> pA_;
-  std::vector<glm::vec3> pB_;
   std::vector<glm::vec3> P_;
   // total angular momentum
   std::vector<glm::vec3> L_;

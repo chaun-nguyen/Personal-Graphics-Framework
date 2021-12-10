@@ -26,11 +26,15 @@ void PhysicsManager::Setup()
   }
 
   // go from 1 to size
+  prev_qA_.resize(size);
   qA_.resize(size);
+  qA_local_.resize(size);
   vA_.resize(size);
 
   // go from 0 to size - 1
+  prev_qB_.resize(size - 1);
   qB_.resize(size - 1);
+  qB_local_.resize(size - 1);
   vB_.resize(size - 1);
 
   // populate qA points
@@ -38,18 +42,20 @@ void PhysicsManager::Setup()
   // populate qB points
   PopulateQB();
 
+  for (int i = 1; i < size; ++i)
+  {
+    prev_qA_[i] = qA_[i];
+  }
+
+  for (int i = 0; i < size - 1; ++i)
+  {
+    prev_qB_[i] = qB_[i];
+  }
+
   // linear force
   fA_.resize(size);
   fB_.resize(size);
   F_.resize(size);
-
-  // drag (air friction)
-  fA_drag.resize(size);
-  fB_drag.resize(size);
-  F_drag.resize(size);
-
-  pA_.resize(size);
-  pB_.resize(size);
   P_.resize(size); // linear momentum
 
   // angular force
@@ -69,10 +75,6 @@ void PhysicsManager::Setup()
     //40.f, 50.f, 45.f, 65.f, 70.f, 35.f
     20.f, 30.f, 10.f, 15.f, 25.f, 35.f
   };
-
-  p = 1.2f; // air density
-  dragC = 0.5f; // drag coefficient
-  faceArea = 0.1f; // cross-section area (cube = l * w * h)
   g = 9.8f; // gravity constant
   speed = 5000.f;
 
@@ -186,10 +188,10 @@ void PhysicsManager::ComputeExternalForce(int i)
   glm::vec3 c = om->SpringMassDamperGeometry_[i]->GetPosition();
 
   // total angular force exerted on point A
-  tA_[i] = glm::cross(qA_[i] - c, fA_[i]);
+  tA_[i] = glm::cross(glm::normalize(qA_[i] - c), fA_[i]);
 
   // total angular force exerted on point B
-  tB_[i] = glm::cross(qB_[i] - c, fB_[i]);
+  tB_[i] = glm::cross(glm::normalize(qB_[i] - c), fB_[i]);
 
   // total angular force exerted on stick
   T_[i] = tA_[i] + tB_[i];
@@ -233,25 +235,29 @@ void PhysicsManager::DynamicSimulation(float dt)
 
     // the location of the mass center
     CurrPosition = om->SpringMassDamperGeometry_[i]->GetPosition();
-    glm::vec3 x_dot = c_dot;
 
-    // need integration method
+    // verlet integration method
     glm::vec3 Verlet_x = VerletIntegrationPosition(dt, i);
-
-    //glm::vec3 x = CurrPosition + x_dot * dt; // euler integration
-
     om->SpringMassDamperGeometry_[i]->SetPosition(Verlet_x);
 
+    curr_qA_ = qA_[i];
+    curr_qB_ = qB_[i];
+
     // update velocity at A and B
-    vA_[i].derivedVelocity = (R_dot * dt).toMat3() * pA_[i] + x_dot;
-    vB_[i].derivedVelocity = (R_dot * dt).toMat3() * pB_[i] + x_dot;
+    vA_[i].derivedVelocity = (curr_qA_ - prev_qA_[i]) / dt;
+    vB_[i].derivedVelocity = (curr_qB_ - prev_qB_[i]) / dt;
+
+    prev_qA_[i] = curr_qA_;
+    prev_qB_[i] = curr_qB_;
 
     // Update qB points
     qB_[i] -= CurrPosition;
+    qB_[i] = glm::inverse(prev_q.toMat3()) * qB_[i];
     qB_[i] = next_q.toMat3() * qB_[i];
     qB_[i] += Verlet_x;
     // Update qA points
     qA_[i] -= CurrPosition;
+    qA_[i] = glm::inverse(prev_q.toMat3()) * qA_[i];
     qA_[i] = next_q.toMat3() * qA_[i];
     qA_[i] += Verlet_x;
 
@@ -267,8 +273,10 @@ void PhysicsManager::DynamicSimulation(float dt)
       //std::cout << "verlet position " << glm::to_string(Verlet_x) << std::endl;
       //std::cout << "euler position " << glm::to_string(x) << std::endl;
       //std::cout << "linear velocity " << glm::to_string(c_dot) << std::endl;
-      //std::cout << "omega is " << glm::to_string(omega) << std::endl;
-      //std::cout << "inverse inertia tensor matrix " << glm::to_string(I_inv) << std::endl;
+      std::cout << "linear force is " << glm::to_string(F_[i]) << std::endl;
+      std::cout << "angular force is " << glm::to_string(T_[i]) << std::endl;
+      std::cout << "omega is " << glm::to_string(omega) << std::endl;
+      std::cout << "inverse inertia tensor matrix " << glm::to_string(I_inv) << std::endl;
     }
 
     ComputeExternalForce(i);
@@ -305,10 +313,12 @@ void PhysicsManager::PopulateQB()
       glm::vec3 worldPosition = om->SpringMassDamperGeometry_[i]->GetPosition(); // world position
       glm::vec3 worldSize = om->SpringMassDamperGeometry_[i]->GetScale(); // world size
       qB_[i] = worldPosition + (worldSize);
+      qB_local_[i] = glm::vec3(glm::inverse(om->SpringMassDamperGeometry_[i]->modelTr) * glm::vec4(qB_[i], 1.f));
     }
     else // anchor points
     {
       qB_[i] = om->SpringMassDamperGeometry_[i]->GetPosition(); // world position
+      qB_local_[i] = glm::vec3(glm::inverse(om->SpringMassDamperGeometry_[i]->modelTr) * glm::vec4(qB_[i], 1.f));
     }
   }
 }
@@ -327,10 +337,12 @@ void PhysicsManager::PopulateQA()
       glm::vec3 worldPosition = om->SpringMassDamperGeometry_[i]->GetPosition(); // world position
       glm::vec3 worldSize = om->SpringMassDamperGeometry_[i]->GetScale(); // world size
       qA_[i] = worldPosition - (worldSize);
+      qA_local_[i] = glm::vec3(glm::inverse(om->SpringMassDamperGeometry_[i]->modelTr) * glm::vec4(qA_[i], 1.f));
     }
     else // anchor points
     {
       qA_[i] = om->SpringMassDamperGeometry_[i]->GetPosition(); // world position
+      qA_local_[i] = glm::vec3(glm::inverse(om->SpringMassDamperGeometry_[i]->modelTr) * glm::vec4(qA_[i], 1.f));
     }
   }
 }
@@ -361,6 +373,48 @@ void PhysicsManager::Draw(ShaderProgram* shader)
   CHECKERROR;
   glBindVertexArray(0);
   CHECKERROR;
+}
+
+glm::vec3 PhysicsManager::getLeftAnchorPointPosition()
+{
+  return Engine::managers_.GetManager<ObjectManager*>()->SpringMassDamperGeometry_.front()->GetPosition();
+}
+
+glm::vec3 PhysicsManager::getRightAnchorPointPosition()
+{
+  return Engine::managers_.GetManager<ObjectManager*>()->SpringMassDamperGeometry_.back()->GetPosition();
+}
+
+void PhysicsManager::setLeftAnchorPointPosition(glm::vec3 newPos)
+{
+  Engine::managers_.GetManager<ObjectManager*>()->SpringMassDamperGeometry_.front()->SetPosition(newPos);
+  qB_.front() = newPos;
+}
+
+void PhysicsManager::setRightAnchorPointPosition(glm::vec3 newPos)
+{
+  Engine::managers_.GetManager<ObjectManager*>()->SpringMassDamperGeometry_.back()->SetPosition(newPos);
+  qA_.back() = newPos;
+}
+
+float PhysicsManager::getSpringConstants(int index)
+{
+  return k[index];
+}
+
+float PhysicsManager::getDampingConstants(int index)
+{
+  return d[index];
+}
+
+void PhysicsManager::setSpringConstants(int index, float newK)
+{
+  k[index] = newK;
+}
+
+void PhysicsManager::setDampingConstants(int index, float newD)
+{
+  d[index] = newD;
 }
 
 void PhysicsManager::PopulateDrawData()

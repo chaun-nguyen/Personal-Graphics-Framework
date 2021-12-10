@@ -12,7 +12,7 @@ public:
   Physics() = default;
   ~Physics() = default;
 
-  void Setup(Object* owner, Shape* polygonData, float mass);
+  void Setup(Object* owner, Shape* polygonData, float mass, glm::vec3 scaleFactor);
 
   float getTotalMass();
   float getInvTotalMass();

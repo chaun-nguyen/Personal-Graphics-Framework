@@ -2,7 +2,7 @@
 
 #include "Shape.h"
 
-void Physics::Setup(Object* owner, Shape* polygonData, float mass)
+void Physics::Setup(Object* owner, Shape* polygonData, float mass, glm::vec3 scaleFactor)
 {
   owner_ = owner;
   std::vector<glm::vec4>& q = polygonData->Pnt;
@@ -32,37 +32,17 @@ void Physics::Setup(Object* owner, Shape* polygonData, float mass)
   }
 
   // inertia tensor matrix
-  for (int i = 0; i < size; ++i)
-  {
-    // Ixx
-    I_obj[0][0] += r[i].y * r[i].y + r[i].z * r[i].z;
+  I_obj = M * glm::mat3(
+    {scaleFactor.y * scaleFactor.y + scaleFactor.z * scaleFactor.z,0.f,0.f},
+    {0.f, scaleFactor.x * scaleFactor.x + scaleFactor.z * scaleFactor.z,0.f },
+    { 0.f,0.f,scaleFactor.x * scaleFactor.x + scaleFactor.y * scaleFactor.y }
+  );
 
-    // Iyy
-    I_obj[1][1] += r[i].x * r[i].x + r[i].z * r[i].z;
-
-    // Izz
-    I_obj[2][2] += r[i].x * r[i].x + r[i].y * r[i].y;
-
-    // Ixy
-    float Ixy = r[i].x * r[i].y;
-    I_obj[1][0] += -Ixy;
-    I_obj[0][1] += -Ixy;
-
-    // Ixz
-    float Ixz = r[i].x * r[i].z;
-    I_obj[2][0] += -Ixz;
-    I_obj[0][2] += -Ixz;
-
-    // Iyz
-    float Iyz = r[i].y * r[i].z;
-    I_obj[2][1] += -Iyz;
-    I_obj[1][2] += -Iyz;
-  }
-  PrecisionCheck(I_obj[0]);
-  PrecisionCheck(I_obj[1]);
-  PrecisionCheck(I_obj[2]);
-  I_obj *= M;
-  I_obj_inv = glm::inverse(I_obj);
+  I_obj_inv = inv_M * glm::mat3(
+    { 1.f / (scaleFactor.y * scaleFactor.y + scaleFactor.z * scaleFactor.z),0.f,0.f },
+    { 0.f, 1.f / (scaleFactor.x * scaleFactor.x + scaleFactor.z * scaleFactor.z),0.f },
+    { 0.f,0.f,1.f / (scaleFactor.x * scaleFactor.x + scaleFactor.y * scaleFactor.y) }
+  );
 }
 
 float Physics::getTotalMass()
