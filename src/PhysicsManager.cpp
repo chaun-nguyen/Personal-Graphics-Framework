@@ -149,6 +149,50 @@ void PhysicsManager::RK4thOrderIntegrationRotation(float dt, int index)
   CurrAngularVelocity += dvdt * dt;
 }
 
+void PhysicsManager::RK4thOrderIntegrationLinearMomentum(float dt, int index)
+{
+  Derivative a, b, c, d;
+
+  // Finds 4 derivatives as dividing step by 4
+  a = EvaluateDerivative(0.0f, Derivative(), index, IntegrationType::LinearMomentum);
+  b = EvaluateDerivative(dt * 0.5f, a, index, IntegrationType::LinearMomentum);
+  c = EvaluateDerivative(dt * 0.5f, b, index, IntegrationType::LinearMomentum);
+  d = EvaluateDerivative(dt, c, index, IntegrationType::LinearMomentum);
+
+  // Finds weighted sum of derivatives for each:
+  // Position from velocity
+  glm::vec3 dfdt = 1.0f / 6.0f * (a.derivedVelocity + 2.0f * (b.derivedVelocity + c.derivedVelocity) + d.derivedVelocity);
+
+  // Velocity from acceleration
+  glm::vec3 dvdt = 1.0f / 6.0f *
+    (a.derivedAcceleration + 2.0f * (b.derivedAcceleration + c.derivedAcceleration) + d.derivedAcceleration);
+
+  P_[index] += dfdt * dt;
+  CurrChangeInLinearMomentum += dvdt * dt;
+}
+
+void PhysicsManager::RK4thOrderIntegrationAngularMomentum(float dt, int index)
+{
+  Derivative a, b, c, d;
+
+  // Finds 4 derivatives as dividing step by 4
+  a = EvaluateDerivative(0.0f, Derivative(), index, IntegrationType::AngularMomentum);
+  b = EvaluateDerivative(dt * 0.5f, a, index, IntegrationType::AngularMomentum);
+  c = EvaluateDerivative(dt * 0.5f, b, index, IntegrationType::AngularMomentum);
+  d = EvaluateDerivative(dt, c, index, IntegrationType::AngularMomentum);
+
+  // Finds weighted sum of derivatives for each:
+  // Position from velocity
+  glm::vec3 dTdt = 1.0f / 6.0f * (a.derivedVelocity + 2.0f * (b.derivedVelocity + c.derivedVelocity) + d.derivedVelocity);
+
+  // Velocity from acceleration
+  glm::vec3 dvdt = 1.0f / 6.0f *
+    (a.derivedAcceleration + 2.0f * (b.derivedAcceleration + c.derivedAcceleration) + d.derivedAcceleration);
+
+  L_[index] += dTdt * dt;
+  CurrChangeInAngularMomentum += dvdt * dt;
+}
+
 Derivative PhysicsManager::EvaluateDerivative(float dt, const Derivative& d, int index, IntegrationType type)
 {
   Derivative output;
@@ -172,6 +216,18 @@ Derivative PhysicsManager::EvaluateDerivative(float dt, const Derivative& d, int
     velocityTemp += d.derivedAcceleration * dt;
     output.derivedVelocity = velocityTemp;
     output.derivedAcceleration = T_[index] * physic->getInvInertiaTensorMatrix();
+    break;
+  case IntegrationType::LinearMomentum:
+    velocityTemp = CurrChangeInLinearMomentum;
+    velocityTemp += d.derivedAcceleration * dt;
+    output.derivedVelocity = velocityTemp;
+    output.derivedAcceleration = glm::vec3(0.f);
+    break;
+  case IntegrationType::AngularMomentum:
+    velocityTemp = CurrChangeInAngularMomentum;
+    velocityTemp += d.derivedAcceleration * dt;
+    output.derivedVelocity = velocityTemp;
+    output.derivedAcceleration = glm::vec3(0.f);
     break;
   }
   
@@ -261,11 +317,19 @@ void PhysicsManager::DynamicSimulation(float dt)
   for (int i = 1; i < size - 1; ++i)
   {
     Physics* physic = om->SpringMassDamperGeometry_[i]->physics;
-    glm::mat3 I_inv = physic->getInvInertiaTensorMatrix();
+    glm::mat3 I_inv = physic->getInvInertiaTensorMatrix(); // inverse inertia tensor matrix
 
-    // need to apply numerical integration method s.t Runge-Kutta 2nd order
-    P_[i] = P_[i] + F_[i] * dt; // total linear force (i.e change in linear momentum)
-    L_[i] = L_[i] + T_[i] * dt; // total torque (i.e change in angular momentum)
+    // total force === change in linear momentum
+    CurrChangeInLinearMomentum = F_[i];
+
+    // RK4 integration method
+    RK4thOrderIntegrationLinearMomentum(dt, i);
+
+    // total torque === change in angular momentum
+    CurrChangeInAngularMomentum = T_[i];
+
+    // RK4 integration method
+    RK4thOrderIntegrationAngularMomentum(dt, i);
 
     // linear velocity
     CurrLinearVelocity = P_[i] * physic->getInvTotalMass();
@@ -290,10 +354,6 @@ void PhysicsManager::DynamicSimulation(float dt)
 
     // update new position (center of mass)
     om->SpringMassDamperGeometry_[i]->SetPosition(CurrPosition);
-
-    // get previous position of A and B
-    prev_qA_ = qA_[i];
-    prev_qB_ = qB_[i];
     
     glm::vec3 scale = om->SpringMassDamperGeometry_[i]->GetScale();
     // Update qB points
@@ -302,13 +362,9 @@ void PhysicsManager::DynamicSimulation(float dt)
     // Update qA points
     qA_[i] = CurrRotation.toMat3() * scale * qA_local_[i] + CurrPosition;
 
-    // get current position of A and B
-    curr_qA_ = qA_[i];
-    curr_qB_ = qB_[i];
-
     // update velocity at A and B
-    vA_[i].derivedVelocity = (curr_qA_ - prev_qA_) / dt;
-    vB_[i].derivedVelocity = (curr_qB_ - prev_qB_) / dt;
+    vA_[i].derivedVelocity = TildeMatrix(CurrAngularVelocity) * CurrRotation.toMat3() * scale * qA_local_[i] + CurrLinearVelocity;
+    vB_[i].derivedVelocity = TildeMatrix(CurrAngularVelocity) * CurrRotation.toMat3() * scale * qB_local_[i] + CurrLinearVelocity;
 
     // update draw data
     PopulateDrawData();

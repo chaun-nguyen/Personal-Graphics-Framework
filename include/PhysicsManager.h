@@ -49,16 +49,28 @@ private:
   {
     Position,
     Rotation,
+    LinearMomentum,
+    AngularMomentum,
 
     Total
   };
-  // Runge-Kutta 4th order integration method
+  // translation
   glm::vec3 CurrPosition;
   glm::vec3 CurrLinearVelocity;
+
+  // orientation
   Quaternion CurrRotation;
   glm::vec3 CurrAngularVelocity;
+
+  // momentum
+  glm::vec3 CurrChangeInLinearMomentum;
+  glm::vec3 CurrChangeInAngularMomentum;
+
+  // Runge-Kutta 4th order integration method
   void RK4thOrderIntegrationPosition(float dt, int index);
   void RK4thOrderIntegrationRotation(float dt, int index);
+  void RK4thOrderIntegrationLinearMomentum(float dt, int index);
+  void RK4thOrderIntegrationAngularMomentum(float dt, int index);
   Derivative EvaluateDerivative(float dt, const Derivative& d, int index, IntegrationType type);
 
   void Movement();
@@ -72,11 +84,7 @@ private:
   void PopulateQA();
 
   // world space location of 2 end points
-  glm::vec3 prev_qA_;
-  glm::vec3 curr_qA_;
   std::vector<glm::vec3> qA_;
-  glm::vec3 prev_qB_;
-  glm::vec3 curr_qB_;
   std::vector<glm::vec3> qB_;
   std::vector<glm::vec3> qA_local_;
   std::vector<glm::vec3> qB_local_;
