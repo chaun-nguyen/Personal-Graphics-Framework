@@ -387,7 +387,7 @@ void RenderManager::ShadowPass()
 
   Shadow_Program->Use();
 
-  sun.SunProj = glm::ortho(-2500.0f, 2500.0f, -2500.0f, 2500.0f, 1.f, 20000.0f);
+  sun.SunProj = glm::ortho(-5000.0f, 5000.0f, -5000.0f, 5000.0f, 1.f, 20000.0f);
   glm::vec3& lightPos = Engine::managers_.GetManager<ObjectManager*>()->sun->GetPosition();
   glm::vec3 center_scene = { 0.f,0.f,0.f };
   sun.SunDir = glm::normalize(center_scene - lightPos);

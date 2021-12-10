@@ -3,6 +3,8 @@
 #include <iostream>
 #include "Physics.h"
 #include "Transform.h"
+#include <glm/glm/gtx/string_cast.hpp>
+#include <glm/glm/ext/quaternion_trigonometric.hpp>
 
 PhysicsManager::~PhysicsManager()
 {
@@ -15,6 +17,13 @@ void PhysicsManager::Setup()
 {
   auto* om = Engine::managers_.GetManager<ObjectManager*>();
   size = om->SpringMassDamperGeometry_.size();
+
+  // Verlet integration method
+  PrevPosition.resize(size);
+  for (int i = 0; i < size; ++i)
+  {
+    PrevPosition[i] = om->SpringMassDamperGeometry_[i]->GetPosition();
+  }
 
   // go from 1 to size
   qA_.resize(size);
@@ -33,6 +42,11 @@ void PhysicsManager::Setup()
   fA_.resize(size);
   fB_.resize(size);
   F_.resize(size);
+
+  // drag (air friction)
+  fA_drag.resize(size);
+  fB_drag.resize(size);
+  F_drag.resize(size);
 
   pA_.resize(size);
   pB_.resize(size);
@@ -55,6 +69,12 @@ void PhysicsManager::Setup()
     //40.f, 50.f, 45.f, 65.f, 70.f, 35.f
     20.f, 30.f, 10.f, 15.f, 25.f, 35.f
   };
+
+  p = 1.2f; // air density
+  dragC = 0.5f; // drag coefficient
+  faceArea = 0.1f; // cross-section area (cube = l * w * h)
+  g = 9.8f; // gravity constant
+  speed = 5000.f;
 
   // only go through sticks, ignore anchor points
   for (int i = 1; i < size - 1; ++i)
@@ -88,11 +108,22 @@ void PhysicsManager::Update()
   }
 }
 
+glm::vec3 PhysicsManager::VerletIntegrationPosition(float dt, int index)
+{
+  auto* om = Engine::managers_.GetManager<ObjectManager*>();
+  // get physic component
+  Physics* physic = om->SpringMassDamperGeometry_[index]->physics;
+
+  glm::vec3 nextPosition = CurrPosition + (CurrPosition - PrevPosition[index]) + (F_[index] / physic->getTotalMass()) * dt * dt;
+  PrevPosition[index] = CurrPosition;
+
+  return nextPosition;
+}
+
 void PhysicsManager::Movement()
 {
   auto* om = Engine::managers_.GetManager<ObjectManager*>();
   auto* fr = Engine::managers_.GetManager<FrameRateManager*>();
-  float speed = 3000.f;
   float dist = speed * static_cast<float>(fr->delta_time);
   glm::vec3 leftAnchorPointPos = om->SpringMassDamperGeometry_.front()->GetPosition();
   glm::vec3 rightAnchorPointPos = om->SpringMassDamperGeometry_.back()->GetPosition();
@@ -133,17 +164,20 @@ void PhysicsManager::ComputeExternalForce(int i)
   // get physic component
   Physics* physic = om->SpringMassDamperGeometry_[i]->physics;
 
+  glm::vec3 relativeVelocityA = vB_[i - 1].derivedVelocity - vA_[i].derivedVelocity;
+  glm::vec3 relativeVelocityB = vA_[i + 1].derivedVelocity - vB_[i].derivedVelocity;
+
   // total linear force exerted on point A
   fA_[i] =
     k[i - 1] * (qB_[i - 1] - qA_[i]) +
     0.5f * physic->getTotalMass() * g * verticalVector +
-    d[i - 1] * (vB_[i - 1].derivedVelocity - vA_[i].derivedVelocity);
+    d[i - 1] * relativeVelocityA;
 
   // total linear force exerted on point B
   fB_[i] =
     k[i] * (qA_[i + 1] - qB_[i]) +
     0.5f * physic->getTotalMass() * g * verticalVector +
-    d[i] * (vA_[i + 1].derivedVelocity - vB_[i].derivedVelocity);
+    d[i] * relativeVelocityB;
 
   // total linear force exerted on stick
   F_[i] = fA_[i] + fB_[i];
@@ -186,48 +220,40 @@ void PhysicsManager::DynamicSimulation(float dt)
 
     // change in rotation
     glm::mat3 tildeOmega = TildeMatrix(omega);
-    glm::mat3 R_dot = tildeOmega * prev_q.toMat3();
+    glm::mat3 R_dot_mat = tildeOmega * prev_q.toMat3();
 
-    // Euler integration method for rotation
-    glm::mat3 next_mq = prev_q.toMat3() + R_dot * dt;
+    glm::quat temp_R_dot = glm::quat_cast(R_dot_mat);
 
-    glm::quat testQ = glm::quat_cast(next_mq);
-    Quaternion next_q = { testQ.w,testQ.x,testQ.y,testQ.z };
-    
+    Quaternion R_dot = { temp_R_dot.w,temp_R_dot.x,temp_R_dot.y,temp_R_dot.z };
+
+    Quaternion next_q = prev_q + R_dot * dt;
     next_q = next_q.normalize();
+
     om->SpringMassDamperGeometry_[i]->SetRotation(next_q);
 
     // the location of the mass center
-    glm::vec3 prev_c = om->SpringMassDamperGeometry_[i]->GetPosition();
+    CurrPosition = om->SpringMassDamperGeometry_[i]->GetPosition();
     glm::vec3 x_dot = c_dot;
-    glm::vec3 c = prev_c + x_dot * dt;
-    om->SpringMassDamperGeometry_[i]->SetPosition(c);
+
+    // need integration method
+    glm::vec3 Verlet_x = VerletIntegrationPosition(dt, i);
+
+    //glm::vec3 x = CurrPosition + x_dot * dt; // euler integration
+
+    om->SpringMassDamperGeometry_[i]->SetPosition(Verlet_x);
 
     // update velocity at A and B
-    vA_[i].derivedVelocity = x_dot;// R_dot* qA_[i] + x_dot;
-    vB_[i].derivedVelocity = x_dot;// R_dot* qB_[i] + x_dot;
+    vA_[i].derivedVelocity = (R_dot * dt).toMat3() * pA_[i] + x_dot;
+    vB_[i].derivedVelocity = (R_dot * dt).toMat3() * pB_[i] + x_dot;
 
-    //std::cout << "stick number: " << i << std::endl;
-    //std::cout << "angle rotate: " << glm::angle(glm::normalize(testQ)) << std::endl;
-    //
-    //std::cout << std::endl;
-    //std::cout << "torque at A: (" << tA_[i].x << ", " << tA_[i].y << ", " << tA_[i].z << ")" << std::endl;
-    //std::cout << "torque at B: (" << tB_[i].x << ", " << tB_[i].y << ", " << tB_[i].z << ")" << std::endl;
-    //std::cout << "change in angular momentum (i.e total angular force): (" << L_[i].x << ", " << L_[i].y << ", " << L_[i].z << ")" << std::endl;
-    //
-    //std::cout << std::endl;
-    //std::cout << "linear force at A: (" << fA_[i].x << ", " << fA_[i].y << ", " << fA_[i].z << ")" << std::endl;
-    //std::cout << "linear force at B: (" << fB_[i].x << ", " << fB_[i].y << ", " << fB_[i].z << ")" << std::endl;
-    //std::cout << "change in linear momentum (i.e total linear force): (" << P_[i].x << ", " << P_[i].y << ", " << P_[i].z << ")" << std::endl;
-    
     // Update qB points
-    qB_[i] -= prev_c;
+    qB_[i] -= CurrPosition;
     qB_[i] = next_q.toMat3() * qB_[i];
-    qB_[i] += c;
-    // Update qB points
-    qA_[i] -= prev_c;
+    qB_[i] += Verlet_x;
+    // Update qA points
+    qA_[i] -= CurrPosition;
     qA_[i] = next_q.toMat3() * qA_[i];
-    qA_[i] += c;
+    qA_[i] += Verlet_x;
 
     // update draw data
     PopulateDrawData();
@@ -235,6 +261,15 @@ void PhysicsManager::DynamicSimulation(float dt)
     // update the inverse inertia tensor
     I_inv = next_q.toMat3() * I_inv * glm::transpose(next_q.toMat3());
     physic->setInvInertiaTensorMatrix(I_inv);
+
+    if (i == 1)
+    {
+      //std::cout << "verlet position " << glm::to_string(Verlet_x) << std::endl;
+      //std::cout << "euler position " << glm::to_string(x) << std::endl;
+      //std::cout << "linear velocity " << glm::to_string(c_dot) << std::endl;
+      //std::cout << "omega is " << glm::to_string(omega) << std::endl;
+      //std::cout << "inverse inertia tensor matrix " << glm::to_string(I_inv) << std::endl;
+    }
 
     ComputeExternalForce(i);
   }

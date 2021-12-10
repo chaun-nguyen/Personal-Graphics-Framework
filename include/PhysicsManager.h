@@ -27,6 +27,15 @@ public:
   bool simulateFlag = false;
   int key;
 private:
+  // Verlet integration method
+  std::vector<glm::vec3> PrevPosition;
+  glm::vec3 CurrPosition;
+  glm::vec3 VerletIntegrationPosition(float dt, int index);
+
+  // Runge-Kutta 4th order integration method
+  glm::vec3 RK4thOrderIntegrationPosition(float dt, int index);
+  Derivative EvaluateDerivative(float dt, const Derivative& d);
+
   void Movement();
 
   void ComputeExternalForce(int i);
@@ -50,6 +59,15 @@ private:
   std::vector<glm::vec3> fB_;
   std::vector<glm::vec3> F_;
 
+  // drag (air friction)
+  std::vector<glm::vec3> fA_drag;
+  std::vector<glm::vec3> fB_drag;
+  std::vector<glm::vec3> F_drag;
+
+  float p; // air density
+  float dragC; // drag coefficient
+  float faceArea; // cross-section area
+
   // total angular force on sticks
   std::vector<glm::vec3> tA_;
   std::vector<glm::vec3> tB_;
@@ -68,9 +86,10 @@ private:
   std::vector<float> d;
 
   // spring damper system constants
-  float g = 9.8f; // gravity constant
+  float g; // gravity constant
   glm::vec3 verticalVector = { 0.f,-1.f,0.f };
   unsigned size;
+  float speed; // anchor point speed
 
   // Epsilon check
   void PrecisionCheck(glm::vec3& value);

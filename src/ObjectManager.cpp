@@ -64,13 +64,15 @@ void ObjectManager::CreateSpringMassDamperSystem()
   //  {1.f,-1.f,-1.f}
   //};
 
+  float height = 3000.f;
+
   Shape* anchorPolygonA = new Sphere(2);
   Object* anchorPointsA = new Object(anchorPolygonA,
     { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
   anchorPointsA->tiling = 1.f;
   anchorPointsA->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
   anchorPointsA->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
-  anchorPointsA->SetPosition({ -3000.0f,500.0f,0.0f });
+  anchorPointsA->SetPosition({ -3000.0f,height,0.0f });
   //anchorPointsA->SetRotation(0.f);
   anchorPointsA->SetScale({ 100.f,100.f,100.f });
   anchorPointsA->BuildModelMatrix();
@@ -83,7 +85,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick1->tiling = 1.f;
   stick1->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick1->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick1->SetPosition({ -2000.0f,500.0f,0.0f });
+  stick1->SetPosition({ -2000.0f,height,0.0f });
   //stick1->SetRotation(0.f);
   stick1->SetScale({ 200.f,50.f,50.f });
   stick1->BuildModelMatrix();
@@ -100,7 +102,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick2->tiling = 1.f;
   stick2->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick2->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick2->SetPosition({ -1000.0f,500.0f,0.0f });
+  stick2->SetPosition({ -1000.0f,height,0.0f });
   //stick2->SetRotation(0.f);
   stick2->SetScale({ 200.f,50.f,50.f });
   stick2->BuildModelMatrix();
@@ -117,7 +119,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick3->tiling = 1.f;
   stick3->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick3->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick3->SetPosition({ 0.0f,500.0f,0.0f });
+  stick3->SetPosition({ 0.0f,height,0.0f });
   //stick3->SetRotation(0.f);
   stick3->SetScale({ 200.f,50.f,50.f });
   stick3->BuildModelMatrix();
@@ -134,7 +136,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick4->tiling = 1.f;
   stick4->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick4->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick4->SetPosition({ 1000.0f,500.0f,0.0f });
+  stick4->SetPosition({ 1000.0f,height,0.0f });
   //stick4->SetRotation(0.f);
   stick4->SetScale({ 200.f,50.f,50.f });
   stick4->BuildModelMatrix();
@@ -151,7 +153,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick5->tiling = 1.f;
   stick5->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick5->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick5->SetPosition({ 2000.0f,500.0f,0.0f });
+  stick5->SetPosition({ 2000.0f,height,0.0f });
   //stick5->SetRotation(0.f);
   stick5->SetScale({ 200.f,50.f,50.f });
   stick5->BuildModelMatrix();
@@ -168,7 +170,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   anchorPointsB->tiling = 1.f;
   anchorPointsB->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
   anchorPointsB->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
-  anchorPointsB->SetPosition({ 3000.0f,500.0f,0.0f });
+  anchorPointsB->SetPosition({ 3000.0f,height,0.0f });
   //anchorPointsB->SetRotation(0.f);
   anchorPointsB->SetScale({ 100.f,100.f,100.f });
   anchorPointsB->BuildModelMatrix();
@@ -246,7 +248,7 @@ void ObjectManager::Setup()
   sun = new Object(lightPolygon,
     { 1.0f,1.0f,1.0f }, lightPolygon->specularColor, lightPolygon->shininess);
 
-  sun->SetPosition({ 3000.0f,3500.0f,100.0f });
+  sun->SetPosition({ 100.0f,7500.0f,100.0f });
   //sun->SetRotation(0.f);
   sun->SetScale({ 1.f,1.f,1.f });
   sun->BuildModelMatrix();

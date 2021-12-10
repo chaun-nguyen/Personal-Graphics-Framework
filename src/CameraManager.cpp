@@ -6,7 +6,7 @@ void CameraManager::Setup()
 {
   nav = false;
   eye = glm::vec3(0.0f, 0.0f, 0.0f);
-  tr = glm::vec3(0.0f, 500.0f, 4000.0f);
+  tr = glm::vec3(0.0f, 2500.0f, 7000.0f);
   yaw = -90.0f;
   pitch = -30.0f;
   speed = 3000.0f;
@@ -62,7 +62,7 @@ void CameraManager::BuildMatrix()
       pitch = -30.0f;
     }
     eye = glm::vec3(0.0f, 0.0f, 0.0f);
-    tr = glm::vec3(0.0f, 500.0f, 4000.0f);
+    tr = glm::vec3(0.0f, 2500.0f, 7000.0f);
     saved_nav = nav;
   }
 
