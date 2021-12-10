@@ -2,7 +2,7 @@
 
 #include "Shape.h"
 
-void Physics::Setup(Object* owner, Shape* polygonData, float mass, glm::vec3 scaleFactor)
+void Physics::Setup(Object* owner, Shape* polygonData, float mass, glm::vec3 scaleFactor_)
 {
   owner_ = owner;
   std::vector<glm::vec4>& q = polygonData->Pnt;
@@ -31,23 +31,20 @@ void Physics::Setup(Object* owner, Shape* polygonData, float mass, glm::vec3 sca
     r[i] = glm::vec3(q[i]) - c;
   }
 
-  // inertia tensor matrix
-  I_obj = M * glm::mat3(
-    {scaleFactor.y * scaleFactor.y + scaleFactor.z * scaleFactor.z,0.f,0.f},
-    {0.f, scaleFactor.x * scaleFactor.x + scaleFactor.z * scaleFactor.z,0.f },
-    { 0.f,0.f,scaleFactor.x * scaleFactor.x + scaleFactor.y * scaleFactor.y }
-  );
-
-  I_obj_inv = inv_M * glm::mat3(
-    { 1.f / (scaleFactor.y * scaleFactor.y + scaleFactor.z * scaleFactor.z),0.f,0.f },
-    { 0.f, 1.f / (scaleFactor.x * scaleFactor.x + scaleFactor.z * scaleFactor.z),0.f },
-    { 0.f,0.f,1.f / (scaleFactor.x * scaleFactor.x + scaleFactor.y * scaleFactor.y) }
-  );
+  scaleFactor = scaleFactor_;
+  CalculateInertiaTensorMatrix();
 }
 
 float Physics::getTotalMass()
 {
   return M;
+}
+
+void Physics::setTotalMass(float newMass)
+{
+  M = newMass;
+  inv_M = 1.f / M;
+  CalculateInertiaTensorMatrix();
 }
 
 float Physics::getInvTotalMass()
@@ -91,5 +88,21 @@ void Physics::PrecisionCheck(glm::vec3& value)
   {
     value[i] = value[i] < epsilon ? 0.f : value[i];
   }
+}
+
+void Physics::CalculateInertiaTensorMatrix()
+{
+  // inertia tensor matrix
+  I_obj = M * glm::mat3(
+    { scaleFactor.y * scaleFactor.y + scaleFactor.z * scaleFactor.z,0.f,0.f },
+    { 0.f, scaleFactor.x * scaleFactor.x + scaleFactor.z * scaleFactor.z,0.f },
+    { 0.f,0.f,scaleFactor.x * scaleFactor.x + scaleFactor.y * scaleFactor.y }
+  );
+
+  I_obj_inv = inv_M * glm::mat3(
+    { 1.f / (scaleFactor.y * scaleFactor.y + scaleFactor.z * scaleFactor.z),0.f,0.f },
+    { 0.f, 1.f / (scaleFactor.x * scaleFactor.x + scaleFactor.z * scaleFactor.z),0.f },
+    { 0.f,0.f,1.f / (scaleFactor.x * scaleFactor.x + scaleFactor.y * scaleFactor.y) }
+  );
 }
 

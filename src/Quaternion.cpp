@@ -77,6 +77,18 @@ Quaternion& Quaternion::operator+=(Quaternion q)
   return *this;
 }
 
+Quaternion Quaternion::operator-(Quaternion q)
+{
+  return Quaternion(_s - q._s, _v - q._v);
+}
+
+Quaternion& Quaternion::operator-=(Quaternion q)
+{
+  *this = *this - q;
+
+  return *this;
+}
+
 Quaternion Quaternion::conjugate()
 {
   return Quaternion(_s, -_v.x, -_v.y, -_v.z);
@@ -271,4 +283,10 @@ Quaternion Utility::ConvertMatrixToQuaternion(glm::mat3 m)
   glm::vec3 vector = { (m[1][2] - m[2][1]) / denom, (m[2][0] - m[0][2]) / denom, (m[0][1] - m[1][0]) / denom };
 
   return Quaternion(scalar, vector);
+}
+
+std::ostream& operator<<(std::ostream& out, Quaternion& q)
+{
+  out << "(" << q._s << ", " << q._v.x << ", " << q._v.y << ", " << q._v.z << ")";
+  return out;
 }

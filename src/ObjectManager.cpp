@@ -52,19 +52,9 @@ ObjectManager::~ObjectManager()
 void ObjectManager::CreateSpringMassDamperSystem()
 {
   // Create Spring Mass Damper System
-  //std::vector<glm::vec3> cubeVertices
-  //{
-  //  {1.f,1.f,1.f},
-  //  {-1.f,1.f,1.f},
-  //  {-1.f,-1.f,1.f},
-  //  {1.f,-1.f,1.f},
-  //  {1.f,1.f,-1.f},
-  //  {-1.f,1.f,-1.f},
-  //  {-1.f,-1.f,-1.f},
-  //  {1.f,-1.f,-1.f}
-  //};
-
   float height = 3000.f;
+  float mass = 10.f;
+  float offset = 1.5f;
 
   Shape* anchorPolygonA = new Sphere(2);
   Object* anchorPointsA = new Object(anchorPolygonA,
@@ -72,7 +62,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   anchorPointsA->tiling = 1.f;
   anchorPointsA->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
   anchorPointsA->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
-  anchorPointsA->SetPosition({ -3000.0f,height,0.0f });
+  anchorPointsA->SetPosition({ -4000.0f,height,0.0f });
   //anchorPointsA->SetRotation(0.f);
   anchorPointsA->SetScale({ 100.f,100.f,100.f });
   anchorPointsA->BuildModelMatrix();
@@ -85,14 +75,14 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick1->tiling = 1.f;
   stick1->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick1->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick1->SetPosition({ -2000.0f,height,0.0f });
+  stick1->SetPosition({ -3000.0f,height,0.0f });
   //stick1->SetRotation(0.f);
   stick1->SetScale({ 200.f,50.f,50.f });
   stick1->BuildModelMatrix();
 
   // populate physics component
   stick1->physics = new Physics();
-  stick1->physics->Setup(stick1, stickShape1, 1.f / stickShape1->Pnt.size(), stick1->GetScale());
+  stick1->physics->Setup(stick1, stickShape1, mass / stickShape1->Pnt.size(), stick1->GetScale() * offset);
 
   SpringMassDamperGeometry_.push_back(stick1);
 
@@ -102,14 +92,14 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick2->tiling = 1.f;
   stick2->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick2->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick2->SetPosition({ -1000.0f,height,0.0f });
+  stick2->SetPosition({ -2000.0f,height,0.0f });
   //stick2->SetRotation(0.f);
   stick2->SetScale({ 200.f,50.f,50.f });
   stick2->BuildModelMatrix();
 
   // populate physics component
   stick2->physics = new Physics();
-  stick2->physics->Setup(stick2, stickShape2, 1.f / stickShape2->Pnt.size(), stick2->GetScale());
+  stick2->physics->Setup(stick2, stickShape2, mass / stickShape2->Pnt.size(), stick2->GetScale() * offset);
 
   SpringMassDamperGeometry_.push_back(stick2);
 
@@ -119,14 +109,14 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick3->tiling = 1.f;
   stick3->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick3->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick3->SetPosition({ 0.0f,height,0.0f });
+  stick3->SetPosition({ -1000.0f,height,0.0f });
   //stick3->SetRotation(0.f);
   stick3->SetScale({ 200.f,50.f,50.f });
   stick3->BuildModelMatrix();
 
   // populate physics component
   stick3->physics = new Physics();
-  stick3->physics->Setup(stick3, stickShape3, 1.f / stickShape3->Pnt.size(), stick3->GetScale());
+  stick3->physics->Setup(stick3, stickShape3, mass / stickShape3->Pnt.size(), stick3->GetScale() * offset);
 
   SpringMassDamperGeometry_.push_back(stick3);
 
@@ -136,14 +126,14 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick4->tiling = 1.f;
   stick4->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick4->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick4->SetPosition({ 1000.0f,height,0.0f });
+  stick4->SetPosition({ 0.0f,height,0.0f });
   //stick4->SetRotation(0.f);
   stick4->SetScale({ 200.f,50.f,50.f });
   stick4->BuildModelMatrix();
 
   // populate physics component
   stick4->physics = new Physics();
-  stick4->physics->Setup(stick4, stickShape4, 1.f / stickShape4->Pnt.size(), stick4->GetScale());
+  stick4->physics->Setup(stick4, stickShape4, mass / stickShape4->Pnt.size(), stick4->GetScale() * offset);
 
   SpringMassDamperGeometry_.push_back(stick4);
 
@@ -153,16 +143,48 @@ void ObjectManager::CreateSpringMassDamperSystem()
   stick5->tiling = 1.f;
   stick5->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
   stick5->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  stick5->SetPosition({ 2000.0f,height,0.0f });
+  stick5->SetPosition({ 1000.0f,height,0.0f });
   //stick5->SetRotation(0.f);
   stick5->SetScale({ 200.f,50.f,50.f });
   stick5->BuildModelMatrix();
 
   // populate physics component
   stick5->physics = new Physics();
-  stick5->physics->Setup(stick5, stickShape5, 1.f / stickShape5->Pnt.size(), stick5->GetScale());
+  stick5->physics->Setup(stick5, stickShape5, mass / stickShape5->Pnt.size(), stick5->GetScale() * offset);
 
   SpringMassDamperGeometry_.push_back(stick5);
+
+  Shape* stickShape6 = new Box();
+  Object* stick6 = new Object(stickShape6,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick6->tiling = 1.f;
+  stick6->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick6->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick6->SetPosition({ 2000.0f,height,0.0f });
+  stick6->SetScale({ 200.f,50.f,50.f });
+  stick6->BuildModelMatrix();
+
+  // populate physics component
+  stick6->physics = new Physics();
+  stick6->physics->Setup(stick6, stickShape6, mass / stickShape6->Pnt.size(), stick6->GetScale()* offset);
+
+  SpringMassDamperGeometry_.push_back(stick6);
+
+  Shape* stickShape7 = new Box();
+  Object* stick7 = new Object(stickShape7,
+    { 0.f,1.f,0.f }, { 0.f,0.f,0.f }, 0.f);
+  stick7->tiling = 1.f;
+  stick7->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
+  stick7->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
+  stick7->SetPosition({ 3000.0f,height,0.0f });
+  stick7->SetScale({ 200.f,50.f,50.f });
+  stick7->BuildModelMatrix();
+
+  // populate physics component
+  stick7->physics = new Physics();
+  stick7->physics->Setup(stick7, stickShape7, mass / stickShape7->Pnt.size(), stick7->GetScale()* offset);
+
+  SpringMassDamperGeometry_.push_back(stick7);
 
   Shape* anchorPolygonB = new Sphere(2);
   Object* anchorPointsB = new Object(anchorPolygonB,
@@ -170,7 +192,7 @@ void ObjectManager::CreateSpringMassDamperSystem()
   anchorPointsB->tiling = 1.f;
   anchorPointsB->diffuseTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128.png");
   anchorPointsB->normalTex = new TextureLoader("./textures/Brazilian_rosewood_pxr128_normal.png");
-  anchorPointsB->SetPosition({ 3000.0f,height,0.0f });
+  anchorPointsB->SetPosition({ 4000.0f,height,0.0f });
   //anchorPointsB->SetRotation(0.f);
   anchorPointsB->SetScale({ 100.f,100.f,100.f });
   anchorPointsB->BuildModelMatrix();

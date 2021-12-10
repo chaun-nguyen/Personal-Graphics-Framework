@@ -15,6 +15,7 @@ public:
   void Setup(Object* owner, Shape* polygonData, float mass, glm::vec3 scaleFactor);
 
   float getTotalMass();
+  void setTotalMass(float newMass);
   float getInvTotalMass();
   glm::vec3 getCenterOfMass();
   std::vector<glm::vec3>& getOrientationVector();
@@ -26,7 +27,7 @@ public:
 private:
   // Epsilon check
   void PrecisionCheck(glm::vec3& value);
-
+  void CalculateInertiaTensorMatrix();
   float epsilon = 0.00001f;
 
   // detail geometry
@@ -34,7 +35,7 @@ private:
   float inv_M = 0.f;
   glm::vec3 c = glm::vec3(0.f); // center of mass
   std::vector<glm::vec3> r; // orientaion vectors
-  
+  glm::vec3 scaleFactor;
   // inertia tensor
   glm::mat3 I_obj = glm::mat3(0.f);
   glm::mat3 I_obj_inv = glm::mat3(0.f);

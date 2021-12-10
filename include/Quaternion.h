@@ -1,4 +1,5 @@
 #pragma once
+#include <ostream>
 #include <glm/glm/vec3.hpp>
 #include <glm/glm/mat3x3.hpp>
 #include <glm/glm/mat4x4.hpp>
@@ -22,6 +23,8 @@ namespace Utility
 class Quaternion
 {
 public:
+  friend std::ostream& operator<<(std::ostream& out, Quaternion& q);
+
   Quaternion();
   ~Quaternion() = default;
 
@@ -47,6 +50,9 @@ public:
   // addition
   Quaternion operator+(Quaternion q);
   Quaternion& operator+=(Quaternion q);
+
+  Quaternion operator-(Quaternion q);
+  Quaternion& operator-=(Quaternion q);
 
   // quaternion properties
   Quaternion conjugate();

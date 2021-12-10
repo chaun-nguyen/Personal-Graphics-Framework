@@ -36,17 +36,30 @@ public:
   void setSpringConstants(int index, float newK);
   void setDampingConstants(int index, float newD);
 
+  float getTotalMass(int index);
+  void setTotalMass(int index, float newMass);
+
+  float getGravity();
+  void setGravity(float newG);
+
   bool simulateFlag = false;
   int key;
 private:
-  // Verlet integration method
-  std::vector<glm::vec3> PrevPosition;
-  glm::vec3 CurrPosition;
-  glm::vec3 VerletIntegrationPosition(float dt, int index);
+  enum class IntegrationType
+  {
+    Position,
+    Rotation,
 
+    Total
+  };
   // Runge-Kutta 4th order integration method
-  glm::vec3 RK4thOrderIntegrationPosition(float dt, int index);
-  Derivative EvaluateDerivative(float dt, const Derivative& d);
+  glm::vec3 CurrPosition;
+  glm::vec3 CurrLinearVelocity;
+  Quaternion CurrRotation;
+  glm::vec3 CurrAngularVelocity;
+  void RK4thOrderIntegrationPosition(float dt, int index);
+  void RK4thOrderIntegrationRotation(float dt, int index);
+  Derivative EvaluateDerivative(float dt, const Derivative& d, int index, IntegrationType type);
 
   void Movement();
 
@@ -59,15 +72,12 @@ private:
   void PopulateQA();
 
   // world space location of 2 end points
-  std::vector<glm::vec3> prev_qA_;
+  glm::vec3 prev_qA_;
   glm::vec3 curr_qA_;
   std::vector<glm::vec3> qA_;
-
-  std::vector<glm::vec3> prev_qB_;
+  glm::vec3 prev_qB_;
   glm::vec3 curr_qB_;
   std::vector<glm::vec3> qB_;
-
-
   std::vector<glm::vec3> qA_local_;
   std::vector<glm::vec3> qB_local_;
 

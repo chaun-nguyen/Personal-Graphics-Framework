@@ -108,6 +108,16 @@ void ImGuiUIManager::Setup()
   springs[3] = "Spring4";
   springs[4] = "Spring5";
   springs[5] = "Spring6";
+  springs[6] = "Spring7";
+  springs[7] = "Spring8";
+
+  sticks[0] = "Sticks1";
+  sticks[1] = "Sticks2";
+  sticks[2] = "Sticks3";
+  sticks[3] = "Sticks4";
+  sticks[4] = "Sticks5";
+  sticks[5] = "Sticks6";
+  sticks[6] = "Sticks7";
 }
 
 void ImGuiUIManager::Update()
@@ -241,13 +251,26 @@ void ImGuiUIManager::Update()
 
     ImGui::Checkbox("Start Simulation", &Engine::managers_.GetManager<PhysicsManager*>()->simulateFlag);
 
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Adjust position by using mouse to drag");
     glm::vec3 leftAnchorPosition = pm->getLeftAnchorPointPosition();
-    ImGui::DragFloat3("Left Anchor Position", glm::value_ptr(leftAnchorPosition), 100.f, -10000.f, 10000.f, "%.3f");
+    ImGui::DragFloat3("Left Anchor Position", glm::value_ptr(leftAnchorPosition), 50.f, -10000.f, 10000.f, "%.3f");
     pm->setLeftAnchorPointPosition(leftAnchorPosition);
 
     glm::vec3 rightAnchorPosition = pm->getRightAnchorPointPosition();
-    ImGui::DragFloat3("Right Anchor Position", glm::value_ptr(rightAnchorPosition), 100.f, -10000.f, 10000.f, "%.3f");
+    ImGui::DragFloat3("Right Anchor Position", glm::value_ptr(rightAnchorPosition), 50.f, -10000.f, 10000.f, "%.3f");
     pm->setRightAnchorPointPosition(rightAnchorPosition);
+
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Global Coefficient");
+    float g = pm->getGravity();
+    ImGui::SetNextItemWidth(100.f);
+    if (ImGui::InputFloat("Gravity (Hard capped at 1000)", &g));
+    {
+      if (g > 1000.f)
+      {
+        g = 1000.f;
+      }
+    }
+    pm->setGravity(g);
 
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Big spring constant will result in less stretching");
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Small spring constant will result in more stretching");
@@ -257,11 +280,13 @@ void ImGuiUIManager::Update()
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Equal 1 means critically damped");
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Greater than 1 means over-damped");
 
-    ImGui::Text("Choose which spring to edit:");
 
+    ImGui::Begin("Springs Settings", &physic_window);
+    ImGui::Text("Choose which spring to edit:");
     static const char* current_spring = "NULL";
     static bool chosen = false;
     static int index = -1;
+    ImGui::SetNextItemWidth(100.f);
     if (ImGui::BeginCombo(current_spring, *springs))
     {
       chosen = false;
@@ -277,14 +302,10 @@ void ImGuiUIManager::Update()
           index = atoi(&last);
           index -= 1;
         }
-        if (is_selected)
-        {
-          ImGui::SetItemDefaultFocus();
-        }
       }
       ImGui::EndCombo();
     }
-
+    
     if (chosen)
     {
       ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), "Editing");
@@ -292,12 +313,69 @@ void ImGuiUIManager::Update()
       ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), current_spring);
       float k = pm->getSpringConstants(index);
       float d = pm->getDampingConstants(index);
-      ImGui::InputFloat("Spring Constant", &k);
-      ImGui::InputFloat("Damping Constant", &d);
 
+      ImGui::SetNextItemWidth(100.f);
+      ImGui::InputFloat("Spring Constant", &k);
+      ImGui::SetNextItemWidth(100.f);
+      ImGui::InputFloat("Damping Constant", &d);
+    
       pm->setSpringConstants(index, k);
       pm->setDampingConstants(index, d);
     }
+    // enable glfw input
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+      Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
+    ImGui::End();
+
+
+    ImGui::Begin("Sticks Settings", &physic_window);
+    ImGui::Text("Choose which stick to edit: (value of mass is hard capped to 50)");
+
+    static const char* current_stick = "NULL";
+    static bool chosenStick = false;
+    static int indexStick = -1;
+    ImGui::SetNextItemWidth(100.f);
+    if (ImGui::BeginCombo(current_stick, *sticks))
+    {
+      chosenStick = false;
+      for (int n = 0; n < IM_ARRAYSIZE(sticks); ++n)
+      {
+        bool is_selected = (current_stick == sticks[n]);
+        if (ImGui::Selectable(sticks[n], is_selected))
+        {
+          chosenStick = true;
+          current_stick = sticks[n];
+          std::string str = current_stick;
+          char last = str.back();
+          indexStick = atoi(&last);
+        }
+      }
+      ImGui::EndCombo();
+    }
+
+    if (chosenStick)
+    {
+      ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), "Editing");
+      ImGui::SameLine();
+      ImGui::TextColored(ImVec4(1.f, 0.f, 0.f, 1.f), current_stick);
+
+      float m = pm->getTotalMass(indexStick);
+
+      ImGui::SetNextItemWidth(100.f);
+      if (ImGui::InputFloat("Mass", &m))
+      {
+        if (m > 50.f)
+        {
+          m = 50.f;
+        }
+      };
+
+      pm->setTotalMass(indexStick, m);
+    }
+    // enable glfw input
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+      Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
+    ImGui::End();
 
     // enable glfw input
     if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))

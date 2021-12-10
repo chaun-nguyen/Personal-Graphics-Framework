@@ -25,5 +25,6 @@ private:
   void SetStyle();
   void ShowDockSpace(bool* p_open);
   const char* items[2];
-  const char* springs[6];
+  const char* springs[8];
+  const char* sticks[7];
 };

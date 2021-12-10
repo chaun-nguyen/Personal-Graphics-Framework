@@ -18,21 +18,12 @@ void PhysicsManager::Setup()
   auto* om = Engine::managers_.GetManager<ObjectManager*>();
   size = om->SpringMassDamperGeometry_.size();
 
-  // Verlet integration method
-  PrevPosition.resize(size);
-  for (int i = 0; i < size; ++i)
-  {
-    PrevPosition[i] = om->SpringMassDamperGeometry_[i]->GetPosition();
-  }
-
   // go from 1 to size
-  prev_qA_.resize(size);
   qA_.resize(size);
   qA_local_.resize(size);
   vA_.resize(size);
 
   // go from 0 to size - 1
-  prev_qB_.resize(size - 1);
   qB_.resize(size - 1);
   qB_local_.resize(size - 1);
   vB_.resize(size - 1);
@@ -41,16 +32,6 @@ void PhysicsManager::Setup()
   PopulateQA();
   // populate qB points
   PopulateQB();
-
-  for (int i = 1; i < size; ++i)
-  {
-    prev_qA_[i] = qA_[i];
-  }
-
-  for (int i = 0; i < size - 1; ++i)
-  {
-    prev_qB_[i] = qB_[i];
-  }
 
   // linear force
   fA_.resize(size);
@@ -67,15 +48,17 @@ void PhysicsManager::Setup()
   d = {
     // damper coefficient (good range from 0.4 to 0.7)
     //0.4f, 0.7f, 0.55f, 0.65f, 0.45f, 0.5f
-    0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f
+    0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f,0.9f,0.9f
+    //100.f,100.f,100.f,100.f,100.f,100.f
   };
 
   k = {
     // spring coefficient
-    //40.f, 50.f, 45.f, 65.f, 70.f, 35.f
-    20.f, 30.f, 10.f, 15.f, 25.f, 35.f
+    65.f, 50.f, 30.f, 45.f, 50.f, 60.f, 35.f, 55.f
+    //20.f, 30.f, 10.f, 15.f, 25.f, 35.f
+    //1000.f,1000.f,1000.f,1000.f,1000.f,1000.f
   };
-  g = 9.8f; // gravity constant
+  g = 500.f; // gravity constant
   speed = 5000.f;
 
   // only go through sticks, ignore anchor points
@@ -110,16 +93,89 @@ void PhysicsManager::Update()
   }
 }
 
-glm::vec3 PhysicsManager::VerletIntegrationPosition(float dt, int index)
+void PhysicsManager::RK4thOrderIntegrationPosition(float dt, int index)
 {
+  Derivative a, b, c, d;
+
+  // Finds 4 derivatives as dividing step by 4
+  a = EvaluateDerivative(0.0f, Derivative(), index, IntegrationType::Position);
+  b = EvaluateDerivative(dt * 0.5f, a, index, IntegrationType::Position);
+  c = EvaluateDerivative(dt * 0.5f, b, index, IntegrationType::Position);
+  d = EvaluateDerivative(dt, c, index, IntegrationType::Position);
+
+  // Finds weighted sum of derivatives for each:
+  // Position from velocity
+  glm::vec3 dpdt = 1.0f / 6.0f * (a.derivedVelocity + 2.0f * (b.derivedVelocity + c.derivedVelocity) + d.derivedVelocity);
+
+  // Velocity from acceleration
+  glm::vec3 dvdt = 1.0f / 6.0f *
+    (a.derivedAcceleration + 2.0f * (b.derivedAcceleration + c.derivedAcceleration) + d.derivedAcceleration);
+
+  // Change position and velocity accordingly
+  CurrPosition += dpdt * dt;
+  CurrLinearVelocity += dvdt * dt;
+}
+
+void PhysicsManager::RK4thOrderIntegrationRotation(float dt, int index)
+{
+  Derivative a, b, c, d;
+
+  // Finds 4 derivatives as dividing step by 4
+  a = EvaluateDerivative(0.0f, Derivative(), index, IntegrationType::Rotation);
+  b = EvaluateDerivative(dt * 0.5f, a, index, IntegrationType::Rotation);
+  c = EvaluateDerivative(dt * 0.5f, b, index, IntegrationType::Rotation);
+  d = EvaluateDerivative(dt, c, index, IntegrationType::Rotation);
+
+  // Finds weighted sum of derivatives for each:
+  // Position from velocity
+  glm::vec3 drdt = 1.0f / 6.0f * (a.derivedVelocity + 2.0f * (b.derivedVelocity + c.derivedVelocity) + d.derivedVelocity);
+
+  // Velocity from acceleration
+  glm::vec3 dvdt = 1.0f / 6.0f *
+    (a.derivedAcceleration + 2.0f * (b.derivedAcceleration + c.derivedAcceleration) + d.derivedAcceleration);
+
+  // Change position and velocity accordingly
+  glm::mat3 tildeOmega = TildeMatrix(drdt);
+  glm::mat3 R_dot_mat = tildeOmega * CurrRotation.toMat3();
+
+  glm::quat temp_R_dot = glm::quat_cast(R_dot_mat);
+
+  Quaternion R_dot = { temp_R_dot.w,temp_R_dot.x,temp_R_dot.y,temp_R_dot.z };
+
+  Quaternion next_q = CurrRotation + R_dot * dt;
+  next_q = next_q.normalize();
+
+  CurrRotation = next_q;
+  CurrAngularVelocity += dvdt * dt;
+}
+
+Derivative PhysicsManager::EvaluateDerivative(float dt, const Derivative& d, int index, IntegrationType type)
+{
+  Derivative output;
+
   auto* om = Engine::managers_.GetManager<ObjectManager*>();
   // get physic component
   Physics* physic = om->SpringMassDamperGeometry_[index]->physics;
 
-  glm::vec3 nextPosition = CurrPosition + (CurrPosition - PrevPosition[index]) + (F_[index] / physic->getTotalMass()) * dt * dt;
-  PrevPosition[index] = CurrPosition;
-
-  return nextPosition;
+  glm::vec3 velocityTemp;
+  
+  switch (type)
+  {
+  case IntegrationType::Position:
+    velocityTemp = CurrLinearVelocity;
+    velocityTemp += d.derivedAcceleration * dt;
+    output.derivedVelocity = velocityTemp;
+    output.derivedAcceleration = F_[index] / physic->getTotalMass();
+    break;
+  case IntegrationType::Rotation:
+    velocityTemp = CurrAngularVelocity;
+    velocityTemp += d.derivedAcceleration * dt;
+    output.derivedVelocity = velocityTemp;
+    output.derivedAcceleration = T_[index] * physic->getInvInertiaTensorMatrix();
+    break;
+  }
+  
+  return output;
 }
 
 void PhysicsManager::Movement()
@@ -212,72 +268,54 @@ void PhysicsManager::DynamicSimulation(float dt)
     L_[i] = L_[i] + T_[i] * dt; // total torque (i.e change in angular momentum)
 
     // linear velocity
-    glm::vec3 c_dot = P_[i] * physic->getInvTotalMass();
+    CurrLinearVelocity = P_[i] * physic->getInvTotalMass();
 
     // angular velocity
-    glm::vec3 omega = I_inv * L_[i];
+    CurrAngularVelocity = I_inv * L_[i];
 
     // the orientation of the stick
-    Quaternion prev_q = om->SpringMassDamperGeometry_[i]->GetOrientation();
-
-    // change in rotation
-    glm::mat3 tildeOmega = TildeMatrix(omega);
-    glm::mat3 R_dot_mat = tildeOmega * prev_q.toMat3();
-
-    glm::quat temp_R_dot = glm::quat_cast(R_dot_mat);
-
-    Quaternion R_dot = { temp_R_dot.w,temp_R_dot.x,temp_R_dot.y,temp_R_dot.z };
-
-    Quaternion next_q = prev_q + R_dot * dt;
-    next_q = next_q.normalize();
-
-    om->SpringMassDamperGeometry_[i]->SetRotation(next_q);
+    CurrRotation = om->SpringMassDamperGeometry_[i]->GetOrientation();
 
     // the location of the mass center
     CurrPosition = om->SpringMassDamperGeometry_[i]->GetPosition();
 
-    // verlet integration method
-    glm::vec3 Verlet_x = VerletIntegrationPosition(dt, i);
-    om->SpringMassDamperGeometry_[i]->SetPosition(Verlet_x);
+    // RK4 integration method
+    RK4thOrderIntegrationRotation(dt, i);
 
+    // update new rotation (orientation)
+    om->SpringMassDamperGeometry_[i]->SetRotation(CurrRotation);
+
+    // RK4 integration method
+    RK4thOrderIntegrationPosition(dt, i);
+
+    // update new position (center of mass)
+    om->SpringMassDamperGeometry_[i]->SetPosition(CurrPosition);
+
+    // get previous position of A and B
+    prev_qA_ = qA_[i];
+    prev_qB_ = qB_[i];
+    
+    glm::vec3 scale = om->SpringMassDamperGeometry_[i]->GetScale();
+    // Update qB points
+    qB_[i] = CurrRotation.toMat3()* scale * qB_local_[i] + CurrPosition;
+
+    // Update qA points
+    qA_[i] = CurrRotation.toMat3() * scale * qA_local_[i] + CurrPosition;
+
+    // get current position of A and B
     curr_qA_ = qA_[i];
     curr_qB_ = qB_[i];
 
     // update velocity at A and B
-    vA_[i].derivedVelocity = (curr_qA_ - prev_qA_[i]) / dt;
-    vB_[i].derivedVelocity = (curr_qB_ - prev_qB_[i]) / dt;
-
-    prev_qA_[i] = curr_qA_;
-    prev_qB_[i] = curr_qB_;
-
-    // Update qB points
-    qB_[i] -= CurrPosition;
-    qB_[i] = glm::inverse(prev_q.toMat3()) * qB_[i];
-    qB_[i] = next_q.toMat3() * qB_[i];
-    qB_[i] += Verlet_x;
-    // Update qA points
-    qA_[i] -= CurrPosition;
-    qA_[i] = glm::inverse(prev_q.toMat3()) * qA_[i];
-    qA_[i] = next_q.toMat3() * qA_[i];
-    qA_[i] += Verlet_x;
+    vA_[i].derivedVelocity = (curr_qA_ - prev_qA_) / dt;
+    vB_[i].derivedVelocity = (curr_qB_ - prev_qB_) / dt;
 
     // update draw data
     PopulateDrawData();
 
     // update the inverse inertia tensor
-    I_inv = next_q.toMat3() * I_inv * glm::transpose(next_q.toMat3());
+    I_inv = CurrRotation.toMat3() * I_inv * glm::transpose(CurrRotation.toMat3());
     physic->setInvInertiaTensorMatrix(I_inv);
-
-    if (i == 1)
-    {
-      //std::cout << "verlet position " << glm::to_string(Verlet_x) << std::endl;
-      //std::cout << "euler position " << glm::to_string(x) << std::endl;
-      //std::cout << "linear velocity " << glm::to_string(c_dot) << std::endl;
-      std::cout << "linear force is " << glm::to_string(F_[i]) << std::endl;
-      std::cout << "angular force is " << glm::to_string(T_[i]) << std::endl;
-      std::cout << "omega is " << glm::to_string(omega) << std::endl;
-      std::cout << "inverse inertia tensor matrix " << glm::to_string(I_inv) << std::endl;
-    }
 
     ComputeExternalForce(i);
   }
@@ -415,6 +453,26 @@ void PhysicsManager::setSpringConstants(int index, float newK)
 void PhysicsManager::setDampingConstants(int index, float newD)
 {
   d[index] = newD;
+}
+
+float PhysicsManager::getTotalMass(int index)
+{
+  return Engine::managers_.GetManager<ObjectManager*>()->SpringMassDamperGeometry_[index]->physics->getTotalMass();
+}
+
+void PhysicsManager::setTotalMass(int index, float newMass)
+{
+  Engine::managers_.GetManager<ObjectManager*>()->SpringMassDamperGeometry_[index]->physics->setTotalMass(newMass);
+}
+
+float PhysicsManager::getGravity()
+{
+  return g;
+}
+
+void PhysicsManager::setGravity(float newG)
+{
+  g = newG;
 }
 
 void PhysicsManager::PopulateDrawData()
