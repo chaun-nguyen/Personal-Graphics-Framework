@@ -48,7 +48,7 @@ void PhysicsManager::Setup()
   d = {
     // damper coefficient (good range from 0.4 to 0.7)
     //0.4f, 0.7f, 0.55f, 0.65f, 0.45f, 0.5f
-    0.95f, 0.95f, 0.95f, 0.95f, 0.95f, 0.95f,0.95f,0.95f
+    4.99f, 4.99f, 4.99f, 4.99f, 4.99f, 4.99f,4.99f,4.99f
     //100.f,100.f,100.f,100.f,100.f,100.f
   };
 
@@ -88,7 +88,7 @@ void PhysicsManager::Update()
   double dt = Engine::managers_.GetManager<FrameRateManager*>()->delta_time;
   if (simulateFlag)
   {
-    DynamicSimulation(static_cast<float>(1.f/60.f));
+    DynamicSimulation(static_cast<float>(dt));
     UpdateVBO();
   }
 }

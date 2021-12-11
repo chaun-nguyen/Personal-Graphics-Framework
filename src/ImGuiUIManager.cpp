@@ -269,10 +269,10 @@ void ImGuiUIManager::Update()
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Big spring constant will result in less stretching");
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Small spring constant will result in more stretching");
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Damping constants usage:");
-    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Equal 0 means un-damped");
-    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Less than 1 means under-damped");
-    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Equal 1 means critically damped");
-    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Greater than 1 means over-damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Too small means un-damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Reasonable small means under-damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Reasonable big means critically damped");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Too big means over-damped");
 
 
     ImGui::Begin("Springs Settings", &physic_window);
