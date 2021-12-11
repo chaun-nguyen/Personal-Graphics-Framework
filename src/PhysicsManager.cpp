@@ -48,13 +48,13 @@ void PhysicsManager::Setup()
   d = {
     // damper coefficient (good range from 0.4 to 0.7)
     //0.4f, 0.7f, 0.55f, 0.65f, 0.45f, 0.5f
-    0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f,0.9f,0.9f
+    0.95f, 0.95f, 0.95f, 0.95f, 0.95f, 0.95f,0.95f,0.95f
     //100.f,100.f,100.f,100.f,100.f,100.f
   };
 
   k = {
     // spring coefficient
-    65.f, 50.f, 30.f, 45.f, 50.f, 60.f, 35.f, 55.f
+    55.f, 35.f, 50.f, 30.f, 30.f, 45.f, 35.f, 55.f
     //20.f, 30.f, 10.f, 15.f, 25.f, 35.f
     //1000.f,1000.f,1000.f,1000.f,1000.f,1000.f
   };
@@ -300,10 +300,10 @@ void PhysicsManager::ComputeExternalForce(int i)
   glm::vec3 c = om->SpringMassDamperGeometry_[i]->GetPosition();
 
   // total angular force exerted on point A
-  tA_[i] = glm::cross(glm::normalize(qA_[i] - c), fA_[i]);
+  tA_[i] = glm::cross(qA_[i] - c, fA_[i]);
 
   // total angular force exerted on point B
-  tB_[i] = glm::cross(glm::normalize(qB_[i] - c), fB_[i]);
+  tB_[i] = glm::cross(qB_[i] - c, fB_[i]);
 
   // total angular force exerted on stick
   T_[i] = tA_[i] + tB_[i];

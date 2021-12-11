@@ -251,7 +251,7 @@ void ImGuiUIManager::Update()
 
     ImGui::Checkbox("Start Simulation", &Engine::managers_.GetManager<PhysicsManager*>()->simulateFlag);
 
-    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Adjust position by using mouse to drag");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Adjust position by using mouse to drag number");
     glm::vec3 leftAnchorPosition = pm->getLeftAnchorPointPosition();
     ImGui::DragFloat3("Left Anchor Position", glm::value_ptr(leftAnchorPosition), 50.f, -10000.f, 10000.f, "%.3f");
     pm->setLeftAnchorPointPosition(leftAnchorPosition);
@@ -263,13 +263,7 @@ void ImGuiUIManager::Update()
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Global Coefficient");
     float g = pm->getGravity();
     ImGui::SetNextItemWidth(100.f);
-    if (ImGui::InputFloat("Gravity (Hard capped at 1000)", &g));
-    {
-      if (g > 1000.f)
-      {
-        g = 1000.f;
-      }
-    }
+    ImGui::DragFloat("Gravity", &g, 10.f, 10.f, 1000.f);
     pm->setGravity(g);
 
     ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Big spring constant will result in less stretching");
@@ -282,6 +276,7 @@ void ImGuiUIManager::Update()
 
 
     ImGui::Begin("Springs Settings", &physic_window);
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Adjust value by using mouse to drag number");
     ImGui::Text("Choose which spring to edit:");
     static const char* current_spring = "NULL";
     static bool chosen = false;
@@ -315,9 +310,9 @@ void ImGuiUIManager::Update()
       float d = pm->getDampingConstants(index);
 
       ImGui::SetNextItemWidth(100.f);
-      ImGui::InputFloat("Spring Constant", &k);
+      ImGui::DragFloat("Spring Constant", &k, 1.f, 10.f, 100.f);
       ImGui::SetNextItemWidth(100.f);
-      ImGui::InputFloat("Damping Constant", &d);
+      ImGui::DragFloat("Damping Constant", &d, 0.01f, 0.f, 1.f);
     
       pm->setSpringConstants(index, k);
       pm->setDampingConstants(index, d);
@@ -329,7 +324,8 @@ void ImGuiUIManager::Update()
 
 
     ImGui::Begin("Sticks Settings", &physic_window);
-    ImGui::Text("Choose which stick to edit: (value of mass is hard capped to 50)");
+    ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), "Adjust value by using mouse to drag number");
+    ImGui::Text("Choose which stick to edit:");
 
     static const char* current_stick = "NULL";
     static bool chosenStick = false;
@@ -362,14 +358,7 @@ void ImGuiUIManager::Update()
       float m = pm->getTotalMass(indexStick);
 
       ImGui::SetNextItemWidth(100.f);
-      if (ImGui::InputFloat("Mass", &m))
-      {
-        if (m > 50.f)
-        {
-          m = 50.f;
-        }
-      };
-
+      ImGui::DragFloat("Mass", &m, 1.f, 5.f, 50.f);
       pm->setTotalMass(indexStick, m);
     }
     // enable glfw input
