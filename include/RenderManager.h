@@ -68,7 +68,7 @@ public:
   bool PCF = true;
   bool debugDraw = false;
   bool boneDraw = false;
-  bool splineDraw = false;
+  bool splineDraw = true;
   bool IKChainDraw = false;
   bool simplexDraw = false; // gjk
   int debugDrawType = to_integral(DebugDrawType::Invalid);

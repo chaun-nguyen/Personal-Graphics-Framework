@@ -700,7 +700,7 @@ void ObjectManager::SectionLoader(const char* path)
 
     auto* rm = Engine::managers_.GetManager<RenderManager*>();
     rm->boneDraw = true;
-    rm->IKChainDraw = true;
+    //rm->IKChainDraw = true;
 
     // create bounding volume
     //testObj->model->CreateBoundingBox();

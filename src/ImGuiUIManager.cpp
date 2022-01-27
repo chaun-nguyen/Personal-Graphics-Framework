@@ -10,13 +10,14 @@ static bool normal_window = true;
 static bool position_window = true;
 static bool specular_window = true;
 static bool depth_window = true;
-static bool shadowMap_window = false;
+static bool shadowMap_window = true;
 static bool octree_window = true;
 static bool bsp_window = true;
-static bool model_window = false;
+static bool model_window = true;
 static bool gjk_window = true;
-static bool animation_window = false;
-static bool path_window = false;
+static bool animation_window = true;
+static bool IK_window = true;
+static bool path_window = true;
 static bool physic_window = true;
 
 // utility structure for realtime plot
@@ -137,42 +138,42 @@ void ImGuiUIManager::Update()
     ImGui::ShowDemoWindow(&show_demo_window);
 
 #pragma region LOADMODEL_WINDOW
-  //ImGui::Begin("Load Model");
-  //ImGui::Text("Model Loading Drop Down:");
-  //
-  //static const char* current_items = "NULL";
-  //if (ImGui::BeginCombo("##Models", *items))
-  //{
-  //  for (int n = 0; n < IM_ARRAYSIZE(items); ++n)
-  //  {
-  //    bool is_selected = (current_items == items[n]);
-  //    if (ImGui::Selectable(items[n], is_selected))
-  //    {
-  //      current_items = items[n];
-  //      loadedItems.push_back(std::string(current_items));
-  //      Engine::managers_.GetManager<ObjectManager*>()->SectionLoader(current_items);
-  //    }
-  //    if (is_selected)
-  //    {
-  //      ImGui::SetItemDefaultFocus();
-  //    }
-  //  }
-  //  ImGui::EndCombo();
-  //}
+  ImGui::Begin("Load Model");
+  ImGui::Text("Model Loading Drop Down:");
+  
+  static const char* current_items = "NULL";
+  if (ImGui::BeginCombo("##Models", *items))
+  {
+    for (int n = 0; n < IM_ARRAYSIZE(items); ++n)
+    {
+      bool is_selected = (current_items == items[n]);
+      if (ImGui::Selectable(items[n], is_selected))
+      {
+        current_items = items[n];
+        loadedItems.push_back(std::string(current_items));
+        Engine::managers_.GetManager<ObjectManager*>()->SectionLoader(current_items);
+      }
+      if (is_selected)
+      {
+        ImGui::SetItemDefaultFocus();
+      }
+    }
+    ImGui::EndCombo();
+  }
   auto* om = Engine::managers_.GetManager<ObjectManager*>();
 
-  //ImGui::Text("Selected section:");
-  //ImGui::Text(current_items);
-  //
-  //ImGui::Text("Loaded section:");
-  //for (auto& s : loadedItems)
-  //{
-  //  ImGui::Text(s.c_str());
-  //}
-  //
-  //if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
-  //  Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
-  //ImGui::End();
+  ImGui::Text("Selected section:");
+  ImGui::Text(current_items);
+  
+  ImGui::Text("Loaded section:");
+  for (auto& s : loadedItems)
+  {
+    ImGui::Text(s.c_str());
+  }
+  
+  if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+    Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
+  ImGui::End();
 #pragma endregion
 #pragma region SETTING_WINDOW
   // setting window
@@ -384,13 +385,6 @@ void ImGuiUIManager::Update()
 
     ImGui::Checkbox("Path Draw", &rm->splineDraw);
 
-    auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
-    ImGui::Checkbox("Start IK", &ikm->runFlag);
-
-    ImGui::Checkbox("IK Chain Draw", &rm->IKChainDraw);
-
-    ImGui::Checkbox("Apply Constraint", &ikm->m_CCDSolver.applyConstraint);
-
     if (am->PlayAnimation)
     {
       ImGui::Text("Sliding & Skidding Control");
@@ -404,6 +398,29 @@ void ImGuiUIManager::Update()
     ImGui::End();
   }
 #pragma endregion
+
+#pragma region IK_WINDOW
+  if (IK_window)
+  {
+    ImGui::Begin("Inverse Kinematic Settings", &IK_window);
+
+    auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
+    if (ImGui::Checkbox("Start IK", &ikm->runFlag))
+    {
+      rm->IKChainDraw = ikm->runFlag ? true : false;
+    }
+
+    ImGui::Checkbox("IK Chain Draw", &rm->IKChainDraw);
+
+    ImGui::Checkbox("Apply Constraint", &ikm->m_CCDSolver.applyConstraint);
+
+    // enable glfw input
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+      Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
+    ImGui::End();
+  }
+#pragma endregion
+
 #pragma region PATH_WINDOW
   if (path_window)
   {
