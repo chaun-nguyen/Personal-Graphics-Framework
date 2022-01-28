@@ -230,21 +230,19 @@ void ObjectManager::Setup()
 
   // Inverse Kinematic
   // end effector for inverse kinematic
-  Shape* boxPolygon = new Box();
-  Object* box = new Object(boxPolygon,
-    boxPolygon->diffuseColor, boxPolygon->specularColor, boxPolygon->shininess);
+  Shape* spherePolygon2 = new Sphere(8);
+  Object* EndEffector = new Object(spherePolygon2,
+    { 0.f,1.f,0.f }, spherePolygon2->specularColor, 1.f);
 
-  box->diffuseTex = new TextureLoader("./textures/space-crate1-albedo.png");
-  box->normalTex = new TextureLoader("./textures/space-crate1-normal-ogl.png");
-  box->tiling = 1.f;
-  box->SetPosition({ 500.0f,800.0f,500.0f });
+  EndEffector->isTextureSupported = 0;
+  EndEffector->SetPosition({ 500.0f,800.0f,500.0f });
   //box->SetRotation(0.f);
-  box->SetScale({ 100.f,100.f,100.f });
-  box->BuildModelMatrix();
-  box->isWireFrame = true;
+  EndEffector->SetScale({ 100.f,100.f,100.f });
+  EndEffector->BuildModelMatrix();
+  EndEffector->isWireFrame = true;
 
-  //Add(box);
-  Engine::managers_.GetManager<InverseKinematicManager*>()->Goal = box;
+  Add(EndEffector);
+  Engine::managers_.GetManager<InverseKinematicManager*>()->Goal = EndEffector;
 
   // plane
   Shape* planePolygon = new Plane(6000.0f, 10);
@@ -637,6 +635,9 @@ void ObjectManager::SectionLoader(const char* path)
 {
   auto* dm = Engine::managers_.GetManager<DeserializeManager*>();
   auto parts = dm->ReadSectionPath(std::string(path));
+  auto* am = Engine::managers_.GetManager<AnimationManager*>();
+  auto* sm = Engine::managers_.GetManager<SplineManager*>();
+  auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
 
   for (int i = 0; i < models_.size(); ++i)
   {
@@ -649,6 +650,10 @@ void ObjectManager::SectionLoader(const char* path)
       }
       delete models_[i];
       models_[i] = nullptr;
+      // delete animation data
+      am->animation.reset();
+      am->animator.reset();
+      sm->getSpaceCurves().pop_back();
     }
   }
   models_.clear();
@@ -665,7 +670,6 @@ void ObjectManager::SectionLoader(const char* path)
     testObj->BuildModelMatrix();
 
     // animation data
-    auto* am = Engine::managers_.GetManager<AnimationManager*>();
     if (am->animation && am->animator)
     {
       am->animation.reset();
@@ -676,10 +680,8 @@ void ObjectManager::SectionLoader(const char* path)
 
     // set up VAO for bone draw hierarchically
     am->animation->SetUpVAO();
-    auto* ikm = Engine::managers_.GetManager<InverseKinematicManager*>();
     ikm->SetUpVAO();
-
-    auto* sm = Engine::managers_.GetManager<SplineManager*>();
+    
     // add player position as the first control point
     glm::vec3 firstcontrolPts = testObj->GetPosition() / 500.f;
     firstcontrolPts.y = 0.f;

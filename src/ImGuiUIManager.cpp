@@ -140,6 +140,15 @@ void ImGuiUIManager::Update()
 #pragma region MAINMENU_BAR
   if (ImGui::BeginMainMenuBar())
   {
+    if (ImGui::BeginMenu("Implemented Features"))
+    {
+      ImGui::TextColored({ 0.f,1.f,0.f,1.f },
+        "Deferred Shading Pipeline\nBRDF-Phong Lighting\nOctree\nBSP-tree\nGJK Algorithm\nSkeletal Animation\nSpline\nInverse Kinematic\nSpring-Damper System");
+
+      ImGui::EndMenu();
+    }
+    ImGui::Separator();
+
     if (ImGui::BeginMenu("View Window"))
     {
       if (ImGui::Checkbox("Animation", &animation_window))
@@ -152,16 +161,23 @@ void ImGuiUIManager::Update()
       ImGui::EndMenu();
     }
     ImGui::Separator();
+    std::stringstream ss;
+    ss << "Graphics Framework - fps: " << static_cast<int>(Engine::managers_.GetManager<FrameRateManager*>()->fps);
+    Engine::managers_.GetManager<WindowManager*>()->SetTitle(ss.str().c_str());
+    ImGui::TextColored({ 0.f,1.f,0.f,1.f }, ss.str().c_str());
 
+    ImGui::Separator();
     if (ImGui::BeginMenu("Quit Application"))
     {
       glfwSetWindowShouldClose(Engine::managers_.GetManager<WindowManager*>()->GetHandle(), 1);
+      ImGui::EndMenu();
     }
 
     ImGui::EndMainMenuBar();
   }
 
-  
+  if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows))
+    Engine::managers_.GetManager<InputManager*>()->glfw_used_flag = false;
 #pragma endregion
 
 #pragma region LOADMODEL_WINDOW

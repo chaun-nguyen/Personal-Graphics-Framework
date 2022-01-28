@@ -205,4 +205,9 @@ void SplineManager::MoveAlongSpaceCurve(Object* player, Spline& currCurve, float
   ikm->SetBoneOrientation(M);
 }
 
+std::vector<Spline>& SplineManager::getSpaceCurves()
+{
+  return spaceCurves;
+}
+
 

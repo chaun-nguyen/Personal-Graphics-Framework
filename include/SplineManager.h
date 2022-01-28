@@ -22,6 +22,7 @@ public:
   void AddCurve(Spline& curve);
   int GetSize();
   void MoveAlongSpaceCurve(Object* player, Spline& currCurve, float t);
+  std::vector<Spline>& getSpaceCurves();
 
   // speed control distance-time function (parabolic ease in/out approach)
   float t1;
