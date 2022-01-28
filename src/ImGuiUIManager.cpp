@@ -137,6 +137,21 @@ void ImGuiUIManager::Update()
   if (show_demo_window)
     ImGui::ShowDemoWindow(&show_demo_window);
 
+#pragma region MAINMENU_BAR
+  if (ImGui::BeginMainMenuBar())
+  {
+    if (ImGui::BeginMenu("View Window"))
+    {
+      ImGui::Checkbox("Animation", &animation_window);
+      ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
+  }
+
+  
+#pragma endregion
+
 #pragma region LOADMODEL_WINDOW
   ImGui::Begin("Load Model");
   ImGui::Text("Model Loading Drop Down:");
