@@ -48,6 +48,7 @@ void Engine::Run()
   {
     Step();
   }
+  glfwDestroyWindow(managers_.GetManager<WindowManager*>()->GetHandle());
 }
 
 void Engine::Step()

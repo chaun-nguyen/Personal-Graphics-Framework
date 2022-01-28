@@ -142,8 +142,20 @@ void ImGuiUIManager::Update()
   {
     if (ImGui::BeginMenu("View Window"))
     {
-      ImGui::Checkbox("Animation", &animation_window);
+      if (ImGui::Checkbox("Animation", &animation_window))
+      {
+        path_window = animation_window ? true : false;
+      }
+      ImGui::Checkbox("Inverse Kinematic", &IK_window);
+      ImGui::Checkbox("Spring-Damper System", &physic_window);
+      
       ImGui::EndMenu();
+    }
+    ImGui::Separator();
+
+    if (ImGui::BeginMenu("Quit Application"))
+    {
+      glfwSetWindowShouldClose(Engine::managers_.GetManager<WindowManager*>()->GetHandle(), 1);
     }
 
     ImGui::EndMainMenuBar();
@@ -756,7 +768,8 @@ void ImGuiUIManager::Update()
     if (!om->gjkController.startFlag)
     {
       ImGui::Checkbox("Start", &om->gjkController.startFlag);
-      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "MAKE SURE TO BUILD OCTREE FIRST!!!\nCLICK START TO BEGIN GJK-ALGORITHM");
+      ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), 
+        "MAKE SURE TO BUILD OCTREE FIRST!!!\nCLICK START TO BEGIN GJK-ALGORITHM\nTO TEST COLLISION:\nPRESS SPACEBAR TO SHOOT SPHERE AT MODEL");
     }
 
     if (om->gjkController.stopFlag)

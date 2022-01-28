@@ -53,7 +53,7 @@ void WindowManager::Setup()
   glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
   glfwWindowHint(GLFW_DEPTH_BITS, 32);
   glfwWindowHint(GLFW_SAMPLES, 4); // 4x msaa
-  window_ = glfwCreateWindow(w_, h_, title_, nullptr, nullptr);
+  window_ = glfwCreateWindow(w_, h_, title_, glfwGetPrimaryMonitor(), nullptr);
 
   if (!window_)
   {
