@@ -66,7 +66,7 @@ public:
   bool gammaCorrection = true;
   bool castShadow = true;
   bool PCF = true;
-  bool debugDraw = false;
+  bool debugDraw = true;
   bool boneDraw = false;
   bool splineDraw = true;
   bool IKChainDraw = false;
