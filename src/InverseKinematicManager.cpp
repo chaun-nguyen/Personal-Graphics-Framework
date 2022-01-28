@@ -334,7 +334,7 @@ void InverseKinematicManager::AnimateIK()
     step = 0.f;
   }
   
-  step += (1.f / 60.f);//Engine::managers_.GetManager<FrameRateManager*>()->delta_time;
+  step += (1.f / 15.f);//Engine::managers_.GetManager<FrameRateManager*>()->delta_time;
 }
 
 // apply new transformation matrix hierarchically to the entire bone tree

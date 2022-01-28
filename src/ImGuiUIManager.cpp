@@ -140,6 +140,12 @@ void ImGuiUIManager::Update()
 #pragma region MAINMENU_BAR
   if (ImGui::BeginMainMenuBar())
   {
+    std::stringstream ss;
+    ss << "Graphics Framework - fps: " << static_cast<int>(Engine::managers_.GetManager<FrameRateManager*>()->fps);
+    Engine::managers_.GetManager<WindowManager*>()->SetTitle(ss.str().c_str());
+    ImGui::TextColored({ 0.f,1.f,0.f,1.f }, ss.str().c_str());
+    ImGui::Separator();
+
     if (ImGui::BeginMenu("Implemented Features"))
     {
       ImGui::TextColored({ 0.f,1.f,0.f,1.f },
@@ -161,15 +167,14 @@ void ImGuiUIManager::Update()
       ImGui::EndMenu();
     }
     ImGui::Separator();
-    std::stringstream ss;
-    ss << "Graphics Framework - fps: " << static_cast<int>(Engine::managers_.GetManager<FrameRateManager*>()->fps);
-    Engine::managers_.GetManager<WindowManager*>()->SetTitle(ss.str().c_str());
-    ImGui::TextColored({ 0.f,1.f,0.f,1.f }, ss.str().c_str());
 
-    ImGui::Separator();
-    if (ImGui::BeginMenu("Quit Application"))
+    if (ImGui::BeginMenu("Exit"))
     {
-      glfwSetWindowShouldClose(Engine::managers_.GetManager<WindowManager*>()->GetHandle(), 1);
+      if (ImGui::MenuItem("Quit Application?"))
+      {
+        glfwSetWindowShouldClose(Engine::managers_.GetManager<WindowManager*>()->GetHandle(), 1);
+      }
+      
       ImGui::EndMenu();
     }
 

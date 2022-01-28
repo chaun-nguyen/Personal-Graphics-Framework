@@ -237,7 +237,7 @@ void ObjectManager::Setup()
   EndEffector->isTextureSupported = 0;
   EndEffector->SetPosition({ 500.0f,800.0f,500.0f });
   //box->SetRotation(0.f);
-  EndEffector->SetScale({ 100.f,100.f,100.f });
+  EndEffector->SetScale({ 50.f,50.f,50.f });
   EndEffector->BuildModelMatrix();
   EndEffector->isWireFrame = true;
 
